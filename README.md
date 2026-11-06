@@ -14,7 +14,7 @@ as a single static Windows or Linux executable with no dependencies.
 | kotok | 1962 | Alan Kotok, John McCarthy and the MIT chess group | one of the first programs with alpha-beta; lost 3-1 to ITEP in 1967 |
 | tech | 1971 | James Gillogly | the "technology" program: all search, no knowledge |
 | beal | 1994 | Don Beal, Martin Smith | alpha-beta over a purely random evaluation |
-| eloworld | 2019 | Tom Murphy VII | the zero-lookahead players of "Elo World": random, alphabetical, cccp, pacifist, suicide king and friends |
+| eloworld | 2019 | Tom Murphy VII | the twenty-eight zero-lookahead players of "Elo World": random, alphabetical, cccp, pacifist, suicide king, the fate-based players and friends |
 
 Binaries are on the Releases page. Build from source with `./build.sh`
 (needs gcc and `x86_64-w64-mingw32-gcc`), or `./build.sh tech` for one
@@ -208,27 +208,41 @@ deliberately silly engines against one another to extend the Elo scale down
 to the worst possible play. This engine recreates his zero-lookahead
 players from the source in his
 [svn repository](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/)
-(player.cc, player-util.cc, chess.cc). The UCI option `Player` chooses one:
-`random_move`, `first_move` (lowest move code), `alphabetical` (first in
-short algebraic notation, so 1.Na3: capitals sort before pawn moves),
-`alphamove` (the alphabetical median, after xkcd 3045), `cccp` (Checkmate,
-Check, Capture, Push), `pacifist`, `min_oppt_moves`, `suicide_king`,
-`reverse_starting`, `huddle`, `swarm`, `generous`, `no_i_insist`,
-`same_color`, `opposite_color`, `sym_mirror_y`, `sym_mirror_x`, `sym_180`
-and `single_player`, which looks `Depth` moves ahead (default 4) as if the
-opponent never moved and plays the first move of the shortest mate it
-finds, otherwise a random move. The source header describes each rule and
-every quirk kept from Murphy's code: his castling-rook piece type, the
-colour bit in his promotion codes, a comparator that calls a knight capture
-and a bishop capture "different but neither better", and a "forced gift"
-tier in no_i_insist that can never fire. Moves are generated in his order
-wherever that order decides a tie. Paper Elo, for the tournament
-programme: pacifist 287, alphabetical 321, generous 343, first_move 358,
-no_i_insist 378, huddle 400, sym_180 430, same_color 431, opposite_color
-432, sym_mirror_x 439, random_move 439, sym_mirror_y 443, reverse_starting
-446, suicide_king 447, swarm 534, cccp 554, min_oppt_moves 597. Console
-command `elo [player]` lists the legal moves in Murphy's order with each
-one's penalty, code or alphabetical rank and marks the choice.
+(player.cc, fate-player.cc, numeric-player.cc, chess.cc). The UCI option
+`Player` chooses one of twenty-eight: `random_move`, `first_move` (lowest
+move code), `alphabetical` (first in short algebraic notation, so 1.Na3:
+capitals sort before pawn moves), `alphamove` (the alphabetical median,
+after xkcd 3045), `cccp` (Checkmate, Check, Capture, Push), `pacifist`,
+`min_oppt_moves`, `suicide_king`, `reverse_starting`, `huddle`, `swarm`,
+`generous`, `no_i_insist`, `same_color`, `opposite_color`, `sym_mirror_y`,
+`sym_mirror_x`, `sym_180`, `single_player` (looks `Depth` moves ahead,
+default 4, as if the opponent never moved and plays the first move of the
+shortest mate it finds, otherwise a random move), the six fate-based
+players `safe`, `dangerous`, `popular`, `rare`, `survivalist` and
+`fatalist` (which steer each piece by the probability, over every lichess
+game to November 2018, of it ending the game alive or captured on a given
+square; the table is `eloworld_data.h`), `equalizer` (move the piece
+moved least to the square visited least) and `binary_pi` / `binary_e`
+(index the alphabetically sorted moves with the next bits of the
+constant). The source header describes each rule and every quirk kept from
+Murphy's code: his castling-rook piece type, the colour bit in his
+promotion codes, a comparator that calls a knight capture and a bishop
+capture "different but neither better", a "forced gift" tier in
+no_i_insist that can never fire, and a shadowed variable in the fate
+players that turns safe, dangerous, popular and rare from weighted-random
+samplers into "the first move in generation order that is not a worst
+move". That last one was in the code the paper's tournament ran, and the
+paper's Elo for those four (349 to 361) sits next to first_move rather
+than next to the random movers, so it is reproduced. Moves are generated
+in his order wherever that order decides a tie. Paper Elo: pacifist 287,
+alphabetical 321, generous 343, popular 349, dangerous 350, safe 351,
+first_move 358, rare 361, no_i_insist 378, huddle 400, sym_180 430,
+same_color 431, opposite_color 432, sym_mirror_x 439, survivalist 439,
+random_move 439, fatalist 440, sym_mirror_y 443, reverse_starting 446,
+suicide_king 447, equalizer 504, swarm 534, cccp 554, min_oppt_moves 597.
+Console command `elo [player]` lists the legal moves in Murphy's order
+with each one's penalty, score, code or alphabetical rank and marks the
+choice.
 
 ## Related reading
 

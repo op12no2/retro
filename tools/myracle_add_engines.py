@@ -30,7 +30,8 @@ EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
 NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
  ("random_move","first_move","alphabetical","alphamove","cccp","pacifist","min_oppt_moves",
   "suicide_king","reverse_starting","huddle","swarm","generous","no_i_insist","same_color",
-  "opposite_color","sym_mirror_y","sym_mirror_x","sym_180","single_player")]
+  "opposite_color","sym_mirror_y","sym_mirror_x","sym_180","single_player",
+  "safe","dangerous","popular","rare","survivalist","fatalist","equalizer","binary_pi","binary_e")]
 def num(s):
     try: return int(s)
     except: 

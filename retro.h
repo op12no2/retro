@@ -450,6 +450,9 @@ static long long node_limit;
 static int pv[MAXPLY][MAXPLY], pv_len[MAXPLY];
 static uint64_t path[MAXPLY];
 static uint64_t game_hist[1024]; static int game_hist_n;
+/* the game so far, for engines that keep state across moves: the position
+   the last "position" command started from and the moves played since */
+static Pos game_start; static int game_moves[1024], game_moves_n;
 static int game_ply;   /* half-moves played from the start position of the game */
 
 static void check_time(void) {
@@ -749,6 +752,7 @@ static int uci_main(void) {
   eng_init();
   set_fen(&root, START_FEN);
   game_hist_n = 1; game_hist[0] = hash_pos(&root);
+  game_start = root; game_moves_n = 0;
 
   while (fgets(line, sizeof line, stdin)) {
     line[strcspn(line, "\r\n")] = 0;
@@ -784,6 +788,7 @@ static int uci_main(void) {
       stop_search();
       set_fen(&root, START_FEN);
       game_hist_n = 1; game_hist[0] = hash_pos(&root); game_ply = 0;
+      game_start = root; game_moves_n = 0;
     } else if (!strcmp(tok, "position")) {
       stop_search();
       tok = strtok(NULL, " ");
@@ -798,10 +803,12 @@ static int uci_main(void) {
       }
       game_hist_n = 0; game_hist[game_hist_n++] = hash_pos(&root);
       game_ply = 0;
+      game_start = root; game_moves_n = 0;
       if (tok && !strcmp(tok, "moves")) {
         while ((tok = strtok(NULL, " "))) {
           int m = parse_move(&root, tok);
           if (!m) break;
+          if (game_moves_n < 1024) game_moves[game_moves_n++] = m;
           make(&root, m); game_ply++;
           if (root.fifty == 0) game_hist_n = 0;
           if (game_hist_n < 1024) game_hist[game_hist_n++] = hash_pos(&root);

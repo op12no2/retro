@@ -46,6 +46,33 @@
  *                    opponent passed every turn, and play its first move;
  *                    otherwise a random move (Murphy's tournament depth: 4)
  *
+ * Players that keep state across the game (fate-player.cc, numeric-player.cc;
+ * the state is rebuilt from the game's moves each time we are asked to move):
+ *   safe, dangerous, popular, rare, survivalist, fatalist
+ *                    "fate-based" players. Each of the 32 starting pieces is
+ *                    followed through the game (a promoted pawn is still that
+ *                    pawn), and a table built from every lichess game to
+ *                    November 2018 (eloworld_data.h) gives, per piece and
+ *                    square, the probability of ending the game alive there
+ *                    (lived) or being captured there (died). The score of the
+ *                    position after a move sums over one's own living pieces:
+ *                    safe 1 + lived, dangerous died, popular lived + died,
+ *                    rare 1 - (lived + died), survivalist lived/died,
+ *                    fatalist died/lived. The move is then sampled at random
+ *                    with probability proportional to the score; safe,
+ *                    dangerous, popular and rare first normalise the scores so
+ *                    the worst move has weight 0 and the best 1 (see the quirk
+ *                    below: in Murphy's code that sampling never happens)
+ *   equalizer        move the piece that has moved fewest times, to the square
+ *                    one's own pieces have visited fewest times (castling
+ *                    counts for king and rook, both squares); random ties
+ *   binary_pi, binary_e
+ *                    sort the legal moves alphabetically and index them with
+ *                    the next bits of pi or e (as many bits as the move count
+ *                    needs, rejecting values that are too big and reading on);
+ *                    every move of the game, by either side, consumes bits.
+ *                    Added to Murphy's repository after the paper
+ *
  * Every "EvalResultPlayer" (pacifist down to sym_180) scores the position
  * after each legal move with a penalty, plays the lowest, and breaks ties
  * with a random number drawn per move. The rest are deterministic, except
@@ -53,10 +80,12 @@
  *
  * Elo from the paper's 2019 tournament (random_move anchors nothing; the
  * scale is relative): pacifist 287, alphabetical 321, generous 343,
- * first_move 358, no_i_insist 378, huddle 400, sym_180 430, same_color 431,
- * opposite_color 432, sym_mirror_x 439, random_move 439, sym_mirror_y 443,
- * reverse_starting 446, suicide_king 447, swarm 534, cccp 554,
- * min_oppt_moves 597, single_player4 (not in the paper's table).
+ * popular 349, dangerous 350, safe 351, first_move 358, rare 361,
+ * no_i_insist 378, huddle 400, sym_180 430, same_color 431, opposite_color
+ * 432, sym_mirror_x 439, survivalist 439, random_move 439, fatalist 440,
+ * sym_mirror_y 443, reverse_starting 446, suicide_king 447, equalizer 504,
+ * swarm 534, cccp 554, min_oppt_moves 597. single_player, binary_pi and
+ * binary_e are not in the table.
  *
  * Fidelity notes:
  * [quirk] Murphy's board keeps a rook that may still castle as a distinct
@@ -79,6 +108,24 @@
  *         expected-value tier plus the mate and stalemate penalties.
  * [quirk] alphamove's "rounding down" takes index n/2, which for an even
  *         count is the later of the two middle moves. Reproduced.
+ * [quirk] In FatePlayer::GetMove the normalised weights are summed into a
+ *         `double total_score` declared inside the if-block, shadowing the
+ *         one the sampling uses, which stays 0.0. The random draw is
+ *         therefore 0 and the sampling loop returns the first move in
+ *         generation order whose normalised weight is positive: the first
+ *         move that is not a worst move. The bug is in the February 2019
+ *         revision (r3865) that the paper's tournament ran, and the paper's
+ *         Elo for safe, dangerous, popular and rare (349 to 361) sits with
+ *         first_move (358) rather than with the random movers (439).
+ *         Reproduced. survivalist and fatalist do not normalise and sample
+ *         properly.
+ * [choice] Murphy's games always start from the standard position and his
+ *          code aborts otherwise. From a FEN we assign each piece to a free
+ *          piece index of its colour and type (own home square first) and
+ *          treat the rest as dead; equalizer counts the start squares of the
+ *          given position as visited.
+ * [choice] If a game outlives the 32768 bits of pi or e we have (Murphy's
+ *          code aborts), the stream wraps round.
  * [choice] Murphy's random numbers come from an ARC4 stream seeded with the
  *          time; ours from retro.h's xorshift seeded with the time. Only
  *          the distribution matters (uniform choice, uniform tie-break).
@@ -101,17 +148,26 @@
 #define ENG_COMMAND
 #include "retro.h"
 
+#include "eloworld_data.h"
+
 enum { P_RANDOM, P_FIRST, P_ALPHABETICAL, P_ALPHAMOVE, P_CCCP, P_PACIFIST, P_MIN_OPPT,
        P_SUICIDE, P_REVERSE, P_HUDDLE, P_SWARM, P_GENEROUS, P_NO_I_INSIST, P_SAME,
-       P_OPPOSITE, P_SYM_Y, P_SYM_X, P_SYM_180, P_SINGLE, N_PLAYERS };
+       P_OPPOSITE, P_SYM_Y, P_SYM_X, P_SYM_180, P_SINGLE,
+       P_SAFE, P_DANGEROUS, P_POPULAR, P_RARE, P_SURVIVALIST, P_FATALIST, P_EQUALIZER,
+       P_BINARY_PI, P_BINARY_E, N_PLAYERS };
 static const char *player_name[N_PLAYERS] = {
   "random_move", "first_move", "alphabetical", "alphamove", "cccp", "pacifist",
   "min_oppt_moves", "suicide_king", "reverse_starting", "huddle", "swarm", "generous",
   "no_i_insist", "same_color", "opposite_color", "sym_mirror_y", "sym_mirror_x",
-  "sym_180", "single_player" };
+  "sym_180", "single_player",
+  "safe", "dangerous", "popular", "rare", "survivalist", "fatalist", "equalizer",
+  "binary_pi", "binary_e" };
 static int player = P_RANDOM, sp_depth = 4;
 
 typedef long long i64;
+static i64 last_pen[256];                     /* per move, for the console command */
+static char last_san[256][8];
+static int last_mate[16], last_mate_len;      /* single_player's sequence */
 #define C_ROOK 7                        /* Murphy's rook-that-may-still-castle */
 
 /* Murphy's coordinates: row 0 is rank 8, col 0 is the a-file */
@@ -448,12 +504,208 @@ static int find_mate(const Pos *p, int depth, int *seq) {
 }
 
 /* ------------------------------------------------------------------ */
+/* stateful players: fates, equalizer, binary_pi / binary_e             */
+/* The state is rebuilt from the game's moves (game_start, game_moves)  */
+/* every time we are asked to move, which is what Murphy's ForceMove    */
+/* calls accumulate.                                                    */
+/* ------------------------------------------------------------------ */
+
+#define MSQ(sq) ((sq) ^ 56)                 /* retro square -> Murphy square (a8 = 0) */
+#define DIED 0x80
+
+/* where each of the 32 starting pieces is now (Murphy square), or DIED */
+typedef struct { unsigned char f[32]; } Fates;
+
+static int fates_index_at(const Fates *F, int msq) {
+  int i;
+  for (i = 0; i < 32; i++) if (F->f[i] == msq) return i;
+  return -1;
+}
+
+/* Murphy's Fates::Update: p is the position before move m */
+static void fates_update(const Pos *p, Fates *F, int m) {
+  int from = M_FROM(m), to = M_TO(m), src = MSQ(from), dst = MSQ(to), i;
+  for (i = 0; i < 32; i++) {
+    if (F->f[i] == src) F->f[i] = dst;
+    else if (F->f[i] == dst) F->f[i] |= DIED;
+  }
+  if (is_castle(p, m)) {
+    if (p->side == BLACK) { if (FILE_OF(to) == 2) F->f[0] = 3; else F->f[7] = 5; }
+    else                  { if (FILE_OF(to) == 2) F->f[24] = 59; else F->f[31] = 61; }
+  }
+  if (PT(p->pc[from]) == PAWN && M_CAP(m) && !p->pc[to]) {   /* en passant */
+    int cap = MSQ(p->side == WHITE ? to - 8 : to + 8);
+    for (i = 0; i < 32; i++) if (F->f[i] == cap) { F->f[i] |= DIED; break; }
+  }
+}
+
+static const unsigned char start_piece[32] = {   /* piece on each index's home square */
+  MK(BLACK,ROOK), MK(BLACK,KNIGHT), MK(BLACK,BISHOP), MK(BLACK,QUEEN), MK(BLACK,KING), MK(BLACK,BISHOP), MK(BLACK,KNIGHT), MK(BLACK,ROOK),
+  MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN), MK(BLACK,PAWN),
+  MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN), MK(WHITE,PAWN),
+  MK(WHITE,ROOK), MK(WHITE,KNIGHT), MK(WHITE,BISHOP), MK(WHITE,QUEEN), MK(WHITE,KING), MK(WHITE,BISHOP), MK(WHITE,KNIGHT), MK(WHITE,ROOK) };
+static int start_msq(int i) { return i < 16 ? i : i + 32; }
+
+/* Murphy's games all begin from the standard position. [choice] From a FEN we
+   assign each piece to a free index of its colour and type, its own home square
+   first; anything left over is untracked and the spare indices are dead. */
+static void fates_init(const Pos *p, Fates *F) {
+  int i, sq, used[64] = {0};
+  for (i = 0; i < 32; i++) {
+    sq = start_msq(i) ^ 56;
+    if (p->pc[sq] == start_piece[i]) { F->f[i] = start_msq(i); used[sq] = 1; }
+    else F->f[i] = DIED;
+  }
+  for (sq = 0; sq < 64; sq++) if (p->pc[sq] && !used[sq]) {
+    for (i = 0; i < 32; i++) if (F->f[i] == DIED && start_piece[i] == p->pc[sq]) { F->f[i] = MSQ(sq); break; }
+  }
+}
+
+/* --- the six fate players --- */
+
+static double fate_eval(const Pos *c, const Fates *F) {   /* c: after the move */
+  int black = c->side == WHITE, i, lo = black ? 0 : 16, hi = black ? 16 : 32;
+  double score = player == P_SAFE ? 1.0 : 0.0;
+  for (i = lo; i < hi; i++) {
+    const LivedDied *ld;
+    if (F->f[i] & DIED) continue;
+    ld = &all_fate_data[i][F->f[i] & 63];
+    switch (player) {
+    case P_SAFE:        score += ld->lived; break;
+    case P_DANGEROUS:   score += ld->died; break;
+    case P_POPULAR:     score += ld->died + ld->lived; break;
+    case P_RARE:        score += 1.0 - (ld->died + ld->lived); break;
+    case P_SURVIVALIST: score += ld->died > 0.0 ? ld->lived / ld->died : 1e6; break;
+    case P_FATALIST:    score += ld->lived > 0.0 ? ld->died / ld->lived : 1e6; break;
+    }
+  }
+  return score;
+}
+
+static double rand_double(void) { return (double)(rng() >> 11) * (1.0 / 9007199254740992.0); }
+
+static double last_score[256];
+static int choose_fate(const Pos *p, int *mv, int n) {
+  Fates F; double sc[256], lo = 99999.0, hi = 0.0, total = 0.0, idx; int i, norm = player <= P_RARE;
+  fates_init(&game_start, &F);
+  for (i = 0; i < game_moves_n; i++) { /* replay to the present */
+    Pos q = game_start; int j;
+    for (j = 0; j < i; j++) make(&q, game_moves[j]);
+    fates_update(&q, &F, game_moves[i]);
+  }
+  murphy_order(p, mv, n);
+  for (i = 0; i < n; i++) {
+    Pos c = *p; Fates G = F;
+    fates_update(p, &G, mv[i]);
+    make(&c, mv[i]);
+    sc[i] = fate_eval(&c, &G);
+    if (sc[i] < lo) lo = sc[i];
+    if (sc[i] > hi) hi = sc[i];
+    last_score[i] = sc[i];
+  }
+  if (norm) {
+    if (n == 1) return mv[0];
+    if (lo >= hi) return mv[rng() % (uint64_t)n];
+    for (i = 0; i < n; i++) sc[i] = (sc[i] - lo) / (hi - lo);
+    /* [quirk] Murphy sums the normalised weights into a variable that shadows
+       the one used for sampling, which stays 0.0: the draw is always 0 and the
+       loop below returns the first move whose weight is positive, i.e. the
+       first move in generation order that is not a worst move. The paper's
+       Elo for safe, dangerous, popular and rare (349-361) sits with first_move
+       (358) rather than with the random movers (439), so this is what played. */
+    total = 0.0;
+  } else {
+    for (i = 0; i < n; i++) total += sc[i];
+  }
+  idx = rand_double() * total;
+  for (i = 0; i < n; i++) { idx -= sc[i]; if (idx < 0.0) return mv[i]; }
+  return mv[n - 1];
+}
+
+/* --- equalizer --- */
+
+static int choose_equalizer(const Pos *p, int *mv, int n) {
+  Fates F; int moved[32] = {0}, visited[2][64] = {{0}}, i, best = 0, sq;
+  int pm[256], sv[256]; uint32_t r[256];
+  fates_init(&game_start, &F);
+  /* the starting squares count as visited [choice: those of game_start] */
+  for (sq = 0; sq < 64; sq++) if (game_start.pc[sq]) visited[PC(game_start.pc[sq])][MSQ(sq)] = 1;
+  for (i = 0; i < game_moves_n; i++) {
+    Pos q = game_start; int j, m = game_moves[i], k;
+    for (j = 0; j < i; j++) make(&q, game_moves[j]);
+    k = fates_index_at(&F, MSQ(M_FROM(m)));
+    if (k >= 0) moved[k]++;
+    visited[q.side][MSQ(M_TO(m))]++;
+    if (is_castle(&q, m)) {
+      if (q.side == BLACK) { if (FILE_OF(M_TO(m)) == 2) { moved[0]++; visited[BLACK][3]++; } else { moved[7]++; visited[BLACK][5]++; } }
+      else                 { if (FILE_OF(M_TO(m)) == 2) { moved[24]++; visited[WHITE][59]++; } else { moved[31]++; visited[WHITE][61]++; } }
+    }
+    fates_update(&q, &F, m);
+  }
+  for (i = 0; i < n; i++) {
+    int k = fates_index_at(&F, MSQ(M_FROM(mv[i])));
+    pm[i] = k >= 0 ? moved[k] : 0;
+    sv[i] = visited[p->side][MSQ(M_TO(mv[i]))];
+    r[i] = (uint32_t)(rng() >> 32);
+    last_pen[i] = pm[i] * 1000 + sv[i];
+  }
+  for (i = 1; i < n; i++)
+    if (pm[i] < pm[best] || (pm[i] == pm[best] && (sv[i] < sv[best] || (sv[i] == sv[best] && r[i] < r[best])))) best = i;
+  return mv[best];
+}
+
+/* --- binary_pi / binary_e: the n-th move in alphabetical order, n read from
+   the bits of the constant with rejection sampling --- */
+
+static const char *stream_hex;
+static int stream_bits;
+static int stream_bit(long idx) {
+  idx %= stream_bits;                         /* [choice] wrap round if the game outlives 32768 bits */
+  { int c = stream_hex[idx / 4], h = c <= '9' ? c - '0' : c - 'a' + 10; return (h >> (3 - idx % 4)) & 1; }
+}
+
+/* choose in position p from stream offset idx; returns the move, *used = bits consumed */
+static int binary_pick(const Pos *p, int *mv, int n, long idx, int *used, int *rank) {
+  int order[256], i, j, num_bits = 0;
+  unsigned mask;
+  char str[256][8];
+  *used = 0;
+  if (n == 1) { if (rank) rank[0] = 0; return mv[0]; }
+  for (i = 0; i < n; i++) { san(p, mv[i], mv, n, str[i]); order[i] = i; }
+  for (i = 1; i < n; i++) { int k = order[i]; for (j = i - 1; j >= 0 && strcmp(str[order[j]], str[k]) > 0; j--) order[j + 1] = order[j]; order[j + 1] = k; }
+  if (rank) for (i = 0; i < n; i++) rank[order[i]] = i;
+  mask = n - 1; mask |= mask >> 1; mask |= mask >> 2; mask |= mask >> 4; mask |= mask >> 8;
+  while (mask & (1u << num_bits)) num_bits++;
+  for (;;) {
+    unsigned r = 0;
+    for (i = 0; i < num_bits; i++) r = (r << 1) | stream_bit(idx + *used + i);
+    *used += num_bits;
+    if ((int)r < n) return mv[order[r]];
+  }
+}
+
+static long last_stream_idx;
+static int choose_binary(const Pos *p, int *mv, int n) {
+  long idx = 0; int i, used, rank[256], m;
+  stream_hex = player == P_BINARY_PI ? pi_hex : e_hex;
+  stream_bits = (int)strlen(stream_hex) * 4;
+  for (i = 0; i < game_moves_n; i++) {   /* every move of the game consumed bits, ours or not */
+    Pos q = game_start; int j, lm[256], ln;
+    for (j = 0; j < i; j++) make(&q, game_moves[j]);
+    ln = gen_legal(&q, lm);
+    binary_pick(&q, lm, ln, idx, &used, NULL);
+    idx += used;
+  }
+  last_stream_idx = idx;
+  m = binary_pick(p, mv, n, idx, &used, rank);
+  for (i = 0; i < n; i++) last_pen[i] = rank[i] + 1;
+  return m;
+}
+
+/* ------------------------------------------------------------------ */
 /* choosing the move                                                    */
 /* ------------------------------------------------------------------ */
 
-static i64 last_pen[256];                     /* per move, for the console command */
-static char last_san[256][8];
-static int last_mate[16], last_mate_len;      /* single_player's sequence */
 
 static int choose(const Pos *p, int *mv, int n) {
   int i, best;
@@ -479,6 +731,12 @@ static int choose(const Pos *p, int *mv, int n) {
   }
   case P_CCCP:
     return choose_cccp(p, mv, n);
+  case P_SAFE: case P_DANGEROUS: case P_POPULAR: case P_RARE: case P_SURVIVALIST: case P_FATALIST:
+    return choose_fate(p, mv, n);
+  case P_EQUALIZER:
+    return choose_equalizer(p, mv, n);
+  case P_BINARY_PI: case P_BINARY_E:
+    return choose_binary(p, mv, n);
   case P_SINGLE: {
     int seq[16];
     if ((last_mate_len = find_mate(p, sp_depth, seq))) { memcpy(last_mate, seq, last_mate_len * sizeof(int)); return seq[0]; }
@@ -546,6 +804,8 @@ int eng_command(const char *cmd, const Pos *p) {
   memcpy(ord, mv, n * sizeof(int));
   murphy_order(p, ord, n);
   out("%s\n", player_name[player]);
+  if (player == P_BINARY_PI || player == P_BINARY_E) out("stream offset %ld bits; numbers are alphabetical rank\n", last_stream_idx);
+  if (player == P_EQUALIZER) out("numbers are times-moved * 1000 + times-visited\n");
   if (player == P_SINGLE) {
     if (last_mate_len) { char ms[8]; out("mate in %d:", last_mate_len); for (i = 0; i < last_mate_len; i++) { move_str(last_mate[i], ms); out(" %s", ms); } out("\n"); }
     else out("no mate within %d\n", sp_depth);
@@ -554,7 +814,8 @@ int eng_command(const char *cmd, const Pos *p) {
     char ms[8], sn[8]; int j;
     move_str(ord[i], ms); san(p, ord[i], mv, n, sn);
     out("%-6s %-7s", ms, sn);
-    if (player == P_FIRST || player == P_ALPHABETICAL || player == P_ALPHAMOVE || (player >= P_PACIFIST && player <= P_SYM_180)) {
+    if (player >= P_SAFE && player <= P_FATALIST) out(" %.6f", last_score[i]);   /* fate scores are in Murphy order already */
+    else if (player == P_FIRST || player == P_ALPHABETICAL || player == P_ALPHAMOVE || (player >= P_PACIFIST && player <= P_SYM_180) || player >= P_EQUALIZER) {
       for (j = 0; j < n && mv[j] != ord[i]; j++) ;
       out(" %lld", last_pen[j]);
     }

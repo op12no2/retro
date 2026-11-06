@@ -35,6 +35,8 @@ cost of fidelity.
   change in search semantics can silently alter a recreation.
 - `<engine>.c`: one per programme. Header comment names the primary sources
   and lists every judgement call as `[choice]`. Keep that discipline.
+  `eloworld_data.h` is the one data header (Murphy's fate table and the
+  hex digits of pi and e), generated, not hand-edited.
 - `build.sh [engine...]`: builds `<engine>` (Linux) and `<engine>.exe`
   (static Windows, mingw-w64). Binaries are git-ignored and shipped as
   GitHub releases.
@@ -52,7 +54,9 @@ or order moves at a node, also called at the root), `ENG_ROOT_ORDER`
 equal-scoring moves, so this is how lexicographic tie-breaks are done),
 `ENG_CONSIDER` (which moves to follow past the horizon), `ENG_EXTEND`,
 `ENG_CUTOFF` (treat an interior node as a leaf), `ENG_COMMAND` (console
-debug commands). A no-search engine (eloworld) does all its choosing in
+debug commands). `game_start` and `game_moves[]` hold the position the
+last `position` command began from and the moves since, for engines
+whose choice depends on the game so far. A no-search engine (eloworld) does all its choosing in
 `eng_root_order`, puts the move in `mv[0]` and returns 1: the driver then
 plays that move without letting its own mate and stalemate scoring
 interfere. `cfg` fields: `alphabeta`, `qdepth`, `fixed_depth`,
