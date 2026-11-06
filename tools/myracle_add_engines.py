@@ -11,7 +11,7 @@ NEW=[
  ("Kaissa 1992",           "kaissa",       "kaissa_64_ja_sse4.exe",           "xboard", "PC Kaissa 1992, descendant of the 1974 world champion (Jim Ablett port)"),
  ("Chess VI 1973",         "chess6",       "pdp-11_chess6_64_ja.exe",         "xboard", "Ken Thompson's PDP-11 Chess VI, Belle's ancestor (Jim Ablett port)"),
  ("CHEKMO-II 1978",        "chekmo",       "chekmo_II_64_ja.exe",             "xboard", "John Comeau's PDP-8 program, late 1970s (Jim Ablett port)"),
- ("Microchess 1976",       "microchess",   "microchessw.exe",                 "xboard", "UNTESTED in a GUI: announces variant nocastle, mishandles castling/ep/promotion"),
+ ("Microchess 1976",       "microchess",   "microchessw.exe",                 "xboard", "Forster/Adrian port, xboard layer rewritten 6 Nov 2026 (force mode, castling/ep fed to its board); the 1976 program itself never castles or promotes"),
  ("TSCP 1.81 1997",        "tscp",         "tscp181.exe",                     "xboard", "Tom Kerrigan's Simple Chess Program"),
  ("micro-Max 4.8 2007",    "micromax",     "umax4_8w_promo.exe",              "xboard", "H.G. Muller, ~1950 chars of C; rebuilt to print promotion piece"),
  ("Toledo Nanochess 2009", "toledo",       "toledo_nanochess_wb_fixed.exe",   "xboard", "Oscar Toledo, 1257 chars of C; fine at 60+1 and up"),

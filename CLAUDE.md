@@ -93,7 +93,9 @@ with `printf 'uci\n'` or `printf 'xboard\nprotover 2\n'` (sleep before
 Keep concurrency at 2 on this machine. Lessons so far: micro-Max omitted
 the promotion piece (fixed in `oldies/micromax`, source alongside); Iota
 needs a 32-bit build; GNU Chess 4 needed a handful of protocol patches
-(see `oldies/gnuchess4/BUILD.txt`). Myracle, unlike cutechess, requires
+(see `oldies/gnuchess4/BUILD.txt`); Microchess's xboard layer had no
+force mode and replied to every move it was fed, so Myracle's book moves
+desynchronised its board (rewritten, `oldies/microchess/BUILD.txt`). Myracle, unlike cutechess, requires
 an xboard engine to answer `protover 2` with a `feature ... done=1` line:
 without one it waits 20 s and logs "failed to start engine" (seen with
 micro-Max 4.8 and TSCP 1.81, both patched to reply). So a protocol-1 exe
@@ -142,5 +144,4 @@ refuses to start it ("defaults have changed") until the entry is refreshed.
 Keep comments ASCII: Myracle's own writer escapes non-ASCII as `\xHH`,
 which is not valid JSON. The user names engines "Name version year"
 (e.g. "Rebel 6.0 1994") and references them by name in `.tour` files, so
-don't rename existing entries. Microchess (variant nocastle) runs in
-Myracle although cutechess rejects it.
+don't rename existing entries.
