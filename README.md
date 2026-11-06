@@ -14,7 +14,7 @@ as a single static Windows or Linux executable with no dependencies.
 | kotok | 1962 | Alan Kotok, John McCarthy and the MIT chess group | one of the first programs with alpha-beta; lost 3-1 to ITEP in 1967 |
 | tech | 1971 | James Gillogly | the "technology" program: all search, no knowledge |
 | beal | 1994 | Don Beal, Martin Smith | alpha-beta over a purely random evaluation |
-| eloworld | 2019 | Tom Murphy VII | the twenty-eight zero-lookahead players of "Elo World": random, alphabetical, cccp, pacifist, suicide king, the fate-based players and friends |
+| eloworld | 2019 | Tom Murphy VII | the zero-lookahead players of "Elo World" (24 from the paper, 4 from his repository): random, alphabetical, cccp, pacifist, suicide king, the fate-based players and friends |
 
 Binaries are on the Releases page. Build from source with `./build.sh`
 (needs gcc and `x86_64-w64-mingw32-gcc`), or `./build.sh tech` for one
@@ -208,8 +208,10 @@ deliberately silly engines against one another to extend the Elo scale down
 to the worst possible play. This engine recreates his zero-lookahead
 players from the source in his
 [svn repository](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/)
-(player.cc, fate-player.cc, numeric-player.cc, chess.cc). The UCI option
-`Player` chooses one of twenty-eight: `random_move`, `first_move` (lowest
+(player.cc, fate-player.cc, numeric-player.cc, chess.cc). Twenty-four of
+them have Elo rows in the paper, single_player is described there without
+one, and alphamove, binary_pi and binary_e were added to his repository
+later. The UCI option `Player` chooses one of the twenty-eight: `random_move`, `first_move` (lowest
 move code), `alphabetical` (first in short algebraic notation, so 1.Na3:
 capitals sort before pawn moves), `alphamove` (the alphabetical median,
 after xkcd 3045), `cccp` (Checkmate, Check, Capture, Push), `pacifist`,
