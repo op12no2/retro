@@ -83,7 +83,11 @@ with `printf 'uci\n'` or `printf 'xboard\nprotover 2\n'` (sleep before
 Keep concurrency at 2 on this machine. Lessons so far: micro-Max omitted
 the promotion piece (fixed in `oldies/micromax`, source alongside); Iota
 needs a 32-bit build; GNU Chess 4 needed a handful of protocol patches
-(see `oldies/gnuchess4/BUILD.txt`).
+(see `oldies/gnuchess4/BUILD.txt`). Myracle, unlike cutechess, requires
+an xboard engine to answer `protover 2` with a `feature ... done=1` line:
+without one it waits 20 s and logs "failed to start engine" (seen with
+micro-Max 4.8 and TSCP 1.81, both patched to reply). So a protocol-1 exe
+that passes cutechess can still fail in Myracle; probe with `protover 2`.
 
 ## Conventions
 
