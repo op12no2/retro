@@ -110,3 +110,23 @@ needs a 32-bit build; GNU Chess 4 needed a handful of protocol patches
   notation; see RESEARCH.md section 5.
 - Not recreatable: NSS 1958 (never played, two goals coded), Machiavelli
   1948 (no rules survive), Los Alamos 1956 (6x6 board).
+
+## Myracle's engine list
+
+Myracle stores its engines in `/mnt/d/myracle/config/engines.json.gz`: a
+gzip of a plain JSON array (name, group, command, working_folder relative
+to `/mnt/d/myracle`, protocol, optional comment, options[] with
+name/type/default/min/max or choices/value). Myracle rewrites it on exit, so
+only edit it while Myracle is closed, and back it up first. Scripts in
+`tools/`: `myracle_add_engines.py` (bulk add, probes UCI options),
+`myracle_test_config.py` (launch every entry through cutechess as
+configured), `myracle_fix_defaults.py` (refresh stored defaults).
+
+Gotchas: if an exe is rebuilt with different option defaults, Myracle
+compares the stored `default` fields with what the engine reports and
+refuses to start it ("defaults have changed") until the entry is refreshed.
+Keep comments ASCII: Myracle's own writer escapes non-ASCII as `\xHH`,
+which is not valid JSON. The user names engines "Name version year"
+(e.g. "Rebel 6.0 1994") and references them by name in `.tour` files, so
+don't rename existing entries. Microchess (variant nocastle) runs in
+Myracle although cutechess rejects it.
