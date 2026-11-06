@@ -10,3 +10,5 @@
 *.exe
 config.json
 *.pgn
+stockfish10-linux
+Topple*.exe

@@ -32,6 +32,12 @@ NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
   "suicide_king","reverse_starting","huddle","swarm","generous","no_i_insist","same_color",
   "opposite_color","sym_mirror_y","sym_mirror_x","sym_180","single_player",
   "safe","dangerous","popular","rare","survivalist","fatalist","equalizer","binary_pi","binary_e")]
+EF="Tom Murphy VII's Elo World (2019) engine-backed entrant %s; needs stockfish_10_x64.exe / Topple_v0.3.5_x86_64.exe beside elofish.exe"
+NEW_RETRO+=[("Elo World %s 2019"%p, "elofish.exe", EF%p, {"Player":p}) for p in
+ ("stockfish0","stockfish5","stockfish10","stockfish15","stockfish20","stockfish1m","worstfish",
+  "stockfish1m_r64","stockfish1m_r128","stockfish1m_r256","stockfish1m_r512","stockfish1m_r1024","stockfish1m_r2048",
+  "stockfish1m_r4096","stockfish1m_r8192","stockfish1m_r16384","stockfish1m_r32768","stockfish1m_r49152",
+  "stockfish1m_r57344","stockfish1m_r61440","stockfish1m_r63488","stockfish1m_r64512","topple10k","topple1m")]
 def num(s):
     try: return int(s)
     except: 

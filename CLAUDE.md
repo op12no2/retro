@@ -15,8 +15,9 @@ cost of fidelity.
 
 - This repo: `~/retro` (WSL). Sessions start here.
 - Myracle's engine folders, on the Windows drive:
-  `/mnt/d/myracle/engines/retro/` holds our seven exes; copy them there
-  after a rebuild (`cp *.exe /mnt/d/myracle/engines/retro/`).
+  `/mnt/d/myracle/engines/retro/` holds our exes; copy them there
+  after a rebuild (`cp *.exe /mnt/d/myracle/engines/retro/`). It also
+  holds `stockfish_10_x64.exe` and `Topple_v0.3.5_x86_64.exe` for elofish.
   `/mnt/d/myracle/engines/oldies/` holds Sargon, Psion and the downloaded
   or rebuilt historic and quirky engines, one folder each, with
   `oldies/README.md` recording protocol, provenance and quirks.
@@ -36,7 +37,9 @@ cost of fidelity.
 - `<engine>.c`: one per programme. Header comment names the primary sources
   and lists every judgement call as `[choice]`. Keep that discipline.
   `eloworld_data.h` is the one data header (Murphy's fate table and the
-  hex digits of pi and e), generated, not hand-edited.
+  hex digits of pi and e), generated, not hand-edited. `elofish.c` is the
+  one engine that spawns other programs (Stockfish 10, Topple 0.3.5 beside
+  the exe; sources in README); keep those child exes out of git.
 - `build.sh [engine...]`: builds `<engine>` (Linux) and `<engine>.exe`
   (static Windows, mingw-w64). Binaries are git-ignored and shipped as
   GitHub releases.

@@ -15,6 +15,7 @@ as a single static Windows or Linux executable with no dependencies.
 | tech | 1971 | James Gillogly | the "technology" program: all search, no knowledge |
 | beal | 1994 | Don Beal, Martin Smith | alpha-beta over a purely random evaluation |
 | eloworld | 2019 | Tom Murphy VII | the zero-lookahead players of "Elo World" (24 from the paper, 4 from his repository): random, alphabetical, cccp, pacifist, suicide king, the fate-based players and friends |
+| elofish | 2019 | Tom Murphy VII | the engine-backed Elo World entrants: Stockfish 10 at skill levels 0 to 20, stockfish1m, worstfish, the fifteen random blends and Topple; drives the real engines, which sit beside it |
 
 Binaries are on the Releases page. Build from source with `./build.sh`
 (needs gcc and `x86_64-w64-mingw32-gcc`), or `./build.sh tech` for one
@@ -246,6 +247,39 @@ Console command `elo [player]` lists the legal moves in Murphy's order
 with each one's penalty, score, code or alphabetical rank and marks the
 choice.
 
+### elofish (2019)
+
+The rest of the Elo World field: the entrants that call a real engine. The
+UCI option `Player` picks `stockfish0`, `stockfish5`, `stockfish10`,
+`stockfish15`, `stockfish20` (Stockfish at that Skill Level, asked for a
+move with a bare `go`, which Stockfish treats as time management with no
+time and answers in milliseconds, hence the paper's "basically
+instantaneously"), `stockfish1m` (Skill Level 20, a million nodes),
+`worstfish` (asks Stockfish how much the opponent likes the position after
+each legal move and plays the one it likes best), the fifteen
+`stockfish1m_rNNN` blends (a 16-bit random number below NNN means a random
+move, otherwise stockfish1m's; NNN runs 64, 128, ... 32768, 49152, 57344,
+61440, 63488, 64512) and `topple10k` / `topple1m` (Topple with a node
+budget). As in Murphy's code the engine is reset before every move with a
+FEN whose move counters read 10 and 10 and no history, so it cannot see
+repetitions, and no book, tablebase or hash clearing is used. The paper
+calls worstfish "configured as stockfish0" but the code, then and now, uses
+level 20; the code is followed and `WorstfishLevel` lets you choose. The
+exe needs `stockfish_10_x64.exe` and `Topple_v0.3.5_x86_64.exe` beside it
+(options `StockfishPath`, `TopplePath`); Stockfish 10 is built from the
+`sf_10` tag of the official repository with
+`make build ARCH=x86-64 COMP=mingw CXX=x86_64-w64-mingw32-g++`, Topple
+0.3.5 is Vincent Tang's release binary (Murphy ran the znver1 build on his
+Threadripper). Paper Elo: worstfish 189, r64512 463, r63488 482, r61440
+521, r57344 601, r49152 752, r32768 976, r16384 1278, stockfish0 1336,
+stockfish5 1645, r8192 1690, topple10k 1772, stockfish10 1915, stockfish15
+1953, r4096 2020, stockfish20 2139, topple1m 2219, r2048 2262, r1024 2426,
+r512 2522, r256 2582, r128 2609, r64 2638, stockfish1m 2644. Not
+recreated from the paper: chessmaster.nes_lv1 and lv2 (an emulated NES
+Chessmaster) and the three blind players (their network file is not in the
+repository). Console command `fish` shows the FEN sent and the engine's
+answer.
+
 ## Related reading
 
 `RESEARCH.md` holds the survey behind this collection: which other early
@@ -268,6 +302,7 @@ strength.
 | tech | Gillogly, [AI 3 (1972)](https://doi.org/10.1016/0004-3702(72)90045-8); [PhD thesis 1978](http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf) | [CPW](https://www.chessprogramming.org/Tech) |
 | beal | Beal and Smith, "Random Evaluations in Chess", ICCA Journal 17(1), 1994 | [CPW](https://www.chessprogramming.org/Don_Beal) |
 | eloworld | Murphy, [*Elo World*](http://tom7.org/chess/weak.pdf), SIGBOVIK 2019; [source](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/) | [video](https://www.youtube.com/watch?v=DpXy041BIlA), [CPW](https://www.chessprogramming.org/Tom_Murphy_VII) |
+| elofish | as eloworld (stockfish.cc, stockfish-player.cc, uci-player.cc); [Stockfish 10](https://github.com/official-stockfish/Stockfish/tree/sf_10), [Topple 0.3.5](https://github.com/konsolas/ToppleChess/releases/tag/v0.3.5) | |
 
 ## Credits
 
