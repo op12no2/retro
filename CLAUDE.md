@@ -52,7 +52,10 @@ or order moves at a node, also called at the root), `ENG_ROOT_ORDER`
 equal-scoring moves, so this is how lexicographic tie-breaks are done),
 `ENG_CONSIDER` (which moves to follow past the horizon), `ENG_EXTEND`,
 `ENG_CUTOFF` (treat an interior node as a leaf), `ENG_COMMAND` (console
-debug commands). `cfg` fields: `alphabeta`, `qdepth`, `fixed_depth`,
+debug commands). A no-search engine (eloworld) does all its choosing in
+`eng_root_order`, puts the move in `mv[0]` and returns 1: the driver then
+plays that move without letting its own mate and stalemate scoring
+interfere. `cfg` fields: `alphabeta`, `qdepth`, `fixed_depth`,
 `max_ext`, `draw_score`, `must_move` (Turing's rule: no stand pat when
 every move is considerable).
 

@@ -1,7 +1,7 @@
 # retro
 
 Faithful recreations of the earliest chess programmes, 1948 to 1971, as
-UCI engines, plus one 1994 experiment that belongs with them in spirit.
+UCI engines, plus two later experiments that belong with them in spirit.
 Each engine is one C file written from the original paper or thesis, built
 as a single static Windows or Linux executable with no dependencies.
 
@@ -14,6 +14,7 @@ as a single static Windows or Linux executable with no dependencies.
 | kotok | 1962 | Alan Kotok, John McCarthy and the MIT chess group | one of the first programs with alpha-beta; lost 3-1 to ITEP in 1967 |
 | tech | 1971 | James Gillogly | the "technology" program: all search, no knowledge |
 | beal | 1994 | Don Beal, Martin Smith | alpha-beta over a purely random evaluation |
+| eloworld | 2019 | Tom Murphy VII | the zero-lookahead players of "Elo World": random, alphabetical, cccp, pacifist, suicide king and friends |
 
 Binaries are on the Releases page. Build from source with `./build.sh`
 (needs gcc and `x86_64-w64-mingw32-gcc`), or `./build.sh tech` for one
@@ -46,6 +47,12 @@ was:
 - **Tech**'s root heuristics are the thesis's tables to the point: centre
   control array, piece priorities per phase, P-K4 +30, O-O +30, N-R3 -15,
   piece blocking a centre pawn -50, and so on.
+- **Elo World** replays the paper's Figure 6 game, cccp against suicide_king,
+  and picks every one of cccp's seven moves (1.d4, 2.Bxg5, 3.Bxe7, 4.d5,
+  5.dxc6+, 6.Qd6+, 7.e4#); in the Figure 4 game each of swarm's six moves
+  up to 6.Qh5# has the lowest penalty on the board, as it must since swarm
+  breaks ties at random. single_player finds the Scholar's mate from the
+  start position (e4, Qf3, Bc4, Qxf7, with Black passing), as Murphy's did.
 - **Kotok-McCarthy** uses every weight the thesis gives, but is built from
   the thesis's description rather than its FORTRAN listing, which survives
   only as an image scan. It opens 1.Nc3 where the original opened 1.e4, so
@@ -192,6 +199,37 @@ gets more random draws to choose the maximum from, so the search implicitly
 rewards mobility and avoids losing pieces. Nothing in this engine knows
 anything about chess beyond the rules. Options `Range`, `Quiescence`.
 
+### eloworld (2019)
+
+Tom Murphy VII's ["Elo World, a framework for benchmarking weak chess
+engines"](http://tom7.org/chess/weak.pdf) (SIGBOVIK 2019, with a
+[video](https://www.youtube.com/watch?v=DpXy041BIlA)) played dozens of
+deliberately silly engines against one another to extend the Elo scale down
+to the worst possible play. This engine recreates his zero-lookahead
+players from the source in his
+[svn repository](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/)
+(player.cc, player-util.cc, chess.cc). The UCI option `Player` chooses one:
+`random_move`, `first_move` (lowest move code), `alphabetical` (first in
+short algebraic notation, so 1.Na3: capitals sort before pawn moves),
+`alphamove` (the alphabetical median, after xkcd 3045), `cccp` (Checkmate,
+Check, Capture, Push), `pacifist`, `min_oppt_moves`, `suicide_king`,
+`reverse_starting`, `huddle`, `swarm`, `generous`, `no_i_insist`,
+`same_color`, `opposite_color`, `sym_mirror_y`, `sym_mirror_x`, `sym_180`
+and `single_player`, which looks `Depth` moves ahead (default 4) as if the
+opponent never moved and plays the first move of the shortest mate it
+finds, otherwise a random move. The source header describes each rule and
+every quirk kept from Murphy's code: his castling-rook piece type, the
+colour bit in his promotion codes, a comparator that calls a knight capture
+and a bishop capture "different but neither better", and a "forced gift"
+tier in no_i_insist that can never fire. Moves are generated in his order
+wherever that order decides a tie. Paper Elo, for the tournament
+programme: pacifist 287, alphabetical 321, generous 343, first_move 358,
+no_i_insist 378, huddle 400, sym_180 430, same_color 431, opposite_color
+432, sym_mirror_x 439, random_move 439, sym_mirror_y 443, reverse_starting
+446, suicide_king 447, swarm 534, cccp 554, min_oppt_moves 597. Console
+command `elo [player]` lists the legal moves in Murphy's order with each
+one's penalty, code or alphabetical rank and marks the choice.
+
 ## Related reading
 
 `RESEARCH.md` holds the survey behind this collection: which other early
@@ -213,6 +251,7 @@ strength.
 | kotok | Kotok, [*A Chess Playing Program for the IBM 7090 Computer*](https://dspace.mit.edu/handle/1721.1/17406), MIT 1962 | [CPW](https://www.chessprogramming.org/Kotok-McCarthy-Program), [ITEP match](https://www.chessprogramming.org/Stanford-ITEP_Match) |
 | tech | Gillogly, [AI 3 (1972)](https://doi.org/10.1016/0004-3702(72)90045-8); [PhD thesis 1978](http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf) | [CPW](https://www.chessprogramming.org/Tech) |
 | beal | Beal and Smith, "Random Evaluations in Chess", ICCA Journal 17(1), 1994 | [CPW](https://www.chessprogramming.org/Don_Beal) |
+| eloworld | Murphy, [*Elo World*](http://tom7.org/chess/weak.pdf), SIGBOVIK 2019; [source](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/) | [video](https://www.youtube.com/watch?v=DpXy041BIlA), [CPW](https://www.chessprogramming.org/Tom_Murphy_VII) |
 
 ## Credits
 

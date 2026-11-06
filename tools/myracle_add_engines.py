@@ -1,8 +1,9 @@
-# Append engines to Myracle engines.json.gz (edit the NEW table). Run with Myracle CLOSED.
+# Append engines to Myracle engines.json.gz (edit the NEW and NEW_RETRO tables). Run with Myracle CLOSED.
 # Probes each UCI exe for its option list; xboard entries get no options.
 import gzip, json, subprocess, sys, os, time, shutil
 CFG='/mnt/d/myracle/config/engines.json.gz'
 OLD='/mnt/d/myracle/engines/oldies'
+RETRO='/mnt/d/myracle/engines/retro'
 # name, folder, exe, protocol, comment
 NEW=[
  ("Rebel 6.0 1994",        "rebel6",       "rebeluci.exe",                    "uci",    "Ed Schröder's 2012 Windows build via wb2uci adapter; book off in wb2uci.eng"),
@@ -24,6 +25,12 @@ NEW=[
  ("Fairy-Random 2021",     "fairyrandom",  "fairy-random_x86-64.exe",         "uci",    "Fairy-Stockfish as a random mover"),
  ("Crafty 11.13 1996",     "crafty1113",   "crafty1113.exe",                  "xboard", "Hyatt's Cray Blitz descendant, built from the 1996 source with protocol-2 patches (see BUILD.txt); no book"),
 ]
+# our own recreations in engines/retro: name, exe, comment, {option: value}
+EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
+NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
+ ("random_move","first_move","alphabetical","alphamove","cccp","pacifist","min_oppt_moves",
+  "suicide_king","reverse_starting","huddle","swarm","generous","no_i_insist","same_color",
+  "opposite_color","sym_mirror_y","sym_mirror_x","sym_180","single_player")]
 def num(s):
     try: return int(s)
     except: 
@@ -81,6 +88,13 @@ for name,folder,exe,proto,comment in NEW:
                 if x['name']=='Ponder': x['value']=False
         e['options']=o
     engines.append(e); added.append((name,len(e.get('options',[]))))
+for name,exe,comment,values in NEW_RETRO:
+    if name in have: continue
+    e={'name':name,'group':'retro','command':exe,'working_folder':'engines/retro','protocol':'uci','comment':comment}
+    e['options']=uci_options(RETRO,exe)
+    for x in e['options']:
+        if x['name'] in values: x['value']=values[x['name']]
+    engines.append(e); added.append((name,len(e['options'])))
 if '--dry' in sys.argv:
     print(json.dumps(engines[-len(added):],indent=1,ensure_ascii=False)[:6000]); print(added); sys.exit()
 shutil.copy(CFG,CFG+'.bak-'+time.strftime('%Y%m%d-%H%M%S'))
