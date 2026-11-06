@@ -11,6 +11,21 @@ watching engines fail to mate is the point). The event values quirkiness
 and historical honesty over strength. Never make an engine stronger at the
 cost of fidelity.
 
+## Where things live on the user's machine
+
+- This repo: `~/retro` (WSL). Sessions start here.
+- Myracle's engine folders, on the Windows drive:
+  `/mnt/d/myracle/engines/retro/` holds our seven exes; copy them there
+  after a rebuild (`cp *.exe /mnt/d/myracle/engines/retro/`).
+  `/mnt/d/myracle/engines/oldies/` holds Sargon, Psion and the downloaded
+  or rebuilt historic and quirky engines, one folder each, with
+  `oldies/README.md` recording protocol, provenance and quirks.
+- Myracle's debug log and PGNs: `/mnt/d/myracle/tournaments/`.
+- Windows cutechess-cli for testing third-party exes:
+  `/mnt/d/myracle/tools/cutechess-win64/`.
+- Myracle drives both UCI and WinBoard engines, so WinBoard-only engines
+  need no adapter.
+
 ## Layout
 
 - `retro.h`: board, move generation, make, attack detection, static exchange
@@ -54,6 +69,21 @@ every move is considerable).
    illegal move or time loss. Delete the `config.json` fastchess leaves.
 4. When piping `quit` after `go`, sleep first; otherwise the search is
    stopped at once.
+
+## Testing third-party Windows engines
+
+Linux fastchess is UCI-only and reads Windows CRLF output as illegal moves,
+so it is only good for our own engines (which force binary stdout). For
+downloaded exes use the Windows cutechess-cli from a directory under
+`/mnt/d` so relative paths resolve:
+`cutechess-cli.exe -engine cmd=x.exe dir=folder proto=xboard|uci name=X -engine cmd=tech.exe dir=. proto=uci name=Tech -each tc=60+1 timemargin=3000 -rounds 1 -games 2 -repeat -concurrency 2 -pgnout t.pgn`.
+Downloaded exes need `chmod +x` before WSL will launch them. Probe first
+with `printf 'uci\n'` or `printf 'xboard\nprotover 2\n'` (sleep before
+`quit`). Use 60+1 rather than 10s+0.1: old engines lose on time at bullet.
+Keep concurrency at 2 on this machine. Lessons so far: micro-Max omitted
+the promotion piece (fixed in `oldies/micromax`, source alongside); Iota
+needs a 32-bit build; GNU Chess 4 needed a handful of protocol patches
+(see `oldies/gnuchess4/BUILD.txt`).
 
 ## Conventions
 
