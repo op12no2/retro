@@ -3,6 +3,7 @@
  *
  *   J. Maynard Smith and D. Michie, "Machines that play games",
  *   New Scientist 12 (260), 9 November 1961, pp. 367-369.
+ *   The SOMA section is reproduced at https://www.chessprogramming.org/SOMA
  *
  * A one-ply analyser: every legal move is scored by the value of the
  * resulting position and the best is played, ties decided "by tossing a

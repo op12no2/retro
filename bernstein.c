@@ -7,6 +7,8 @@
  *     June 1958
  *   Bernstein, "A chess playing program for the I.B.M. 704", Chess Review,
  *     July 1958
+ *   Scans of all three are linked from
+ *   https://www.chessprogramming.org/The_Bernstein_Chess_Program
  *
  * The first complete chess program. At every node a "plausible move table"
  * of at most SEVEN moves is filled by asking eight questions in order,

@@ -1,6 +1,7 @@
 /*
  * shannon - Claude E. Shannon, "Programming a Computer for Playing Chess",
  * Philosophical Magazine, Ser. 7, Vol. 41, No. 314, March 1950.
+ * https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf
  *
  * Evaluation, Shannon's f(P) in centipawns:
  *

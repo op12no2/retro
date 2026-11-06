@@ -2,7 +2,7 @@
  * turochamp - Alan Turing and David Champernowne's "paper machine", 1948.
  *
  * Source: A. M. Turing, "Chess", in B. V. Bowden (ed.), Faster Than Thought,
- * Pitman 1953, pp. 288-295. Everything below follows that text; where it is
+ * Pitman 1953, pp. 288-295. https://archive.org/details/fasterthanthough00bvbo Everything below follows that text; where it is
  * silent the choice is marked [choice].
  *
  * Material: P 1, Kt 3, B 3.5, R 5, Q 10, checkmate 1000. The value of a

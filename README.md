@@ -72,7 +72,9 @@ says his position-play was better chess knowledge than it looks.
 ### turochamp (1948)
 
 Turing and Champernowne worked out the rules in 1948 and Turing described
-them in Bowden's *Faster Than Thought* (1953). Material is P 1, Kt 3,
+them in the chess section of his chapter in Bowden's
+[*Faster Than Thought*](https://archive.org/details/fasterthanthough00bvbo)
+(1953, pp. 288-295). Material is P 1, Kt 3,
 B 3.5, R 5, Q 10, valued as the ratio W/B, "better than W - B as the latter
 does not encourage exchanges when one has the advantage". Every move and
 every reply is "considerable"; beyond that only recaptures, captures of
@@ -95,7 +97,9 @@ text does not list checks, though Champernowne remembered following them).
 
 ### shannon (1950)
 
-Shannon's paper proposed the evaluation everyone quotes, 900 Q + 500 R +
+Shannon's [paper](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf)
+(also as [plain text](https://www.pi.infn.it/~carosi/chess/shannon.txt))
+proposed the evaluation everyone quotes, 900 Q + 500 R +
 300 (B+N) + 100 P, minus 50 per doubled, backward or isolated pawn, plus 10
 per legal move of mobility, and two strategies. Type A searches every move
 to a fixed depth, continuing through exchanges until the position is
@@ -111,7 +115,10 @@ bare king, as he pointed out himself.
 ### bernstein (1957)
 
 The first program to play complete games of chess, on an IBM 704 at eight
-minutes a move. At every node it fills a plausible move table of at most
+minutes a move, described in three 1958 articles: the
+[WJCC paper](https://d1yx3ys82bpsa0.cloudfront.net/chess/a-chess-playing-program-for-the-ibm-704.bernstein-roberts-arbuckle-belsky.062303011.pdf),
+[Scientific American](https://d1yx3ys82bpsa0.cloudfront.net/chess/computer-v-chessplayer.bernstein-roberts.scientific-american.june-1958.062303059.pdf)
+and [Chess Review](https://d1yx3ys82bpsa0.cloudfront.net/chess/chess-review.a-chess-playing-program-for-the-ibm-704.bernstein.july-1958.062303058.pdf). At every node it fills a plausible move table of at most
 seven moves by asking eight questions in order: is the king in check? can
 material be gained, saved or exchanged? can we castle (if so, castle and
 look no further)? develop a minor piece? occupy a key square? an open file?
@@ -129,7 +136,9 @@ command `table`. Options `Depth`, `TableSize`, `MaterialFactor`,
 ### soma (1961)
 
 John Maynard Smith, the evolutionary biologist, designed SOMA and
-published it with Donald Michie in New Scientist. It looks one move ahead:
+published it with Donald Michie in New Scientist (9 November 1961); the
+whole SOMA section is reproduced on the
+[Chess Programming Wiki](https://www.chessprogramming.org/SOMA). It looks one move ahead:
 every legal move is scored by the resulting position and the best played,
 ties "by tossing a coin". Material P 10, Kt and B 30, R 50, Q 90, K 1000;
 one point for every square a piece attacks, two for the centre, three next
@@ -144,7 +153,8 @@ command `soma`. Options `Depth`, `CastlingBonus`, `PawnThreatPenalty`.
 
 ### kotok (1962)
 
-Alan Kotok's MIT bachelor's thesis, supervised by John McCarthy, describes
+Alan Kotok's [MIT bachelor's thesis](https://dspace.mit.edu/handle/1721.1/17406)
+(1962, also AI Memo 41), supervised by John McCarthy, describes
 a Shannon type B program for the IBM 7090: at each ply the moves are
 ordered by a one-ply evaluation and only the best few kept, "4 3 2 2 1 1 1 1"
 by ply, with alpha-beta, ending at depth 8 or at a "stable position". The
@@ -158,7 +168,11 @@ later improved it at Stanford and played the ITEP program by telegraph in
 ### tech (1971)
 
 Gillogly built Tech at Carnegie Mellon to measure how far raw search alone
-gets you: full-width alpha-beta, leaves scored by material only, every
+gets you, described in
+[*Artificial Intelligence* 3 (1972)](https://doi.org/10.1016/0004-3702(72)90045-8)
+and in full in his 1978 PhD thesis
+[*Performance Analysis of the Technology Chess Program*](http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf)
+(CMU-CS-78-189): full-width alpha-beta, leaves scored by material only, every
 capture chain followed to quiescence, no positional knowledge in the tree.
 The one concession is a positional pre-sort of the root moves from
 heuristics by Hans Berliner, and because the search accepts a later move
@@ -170,8 +184,10 @@ command `pos`. Option `Depth`.
 
 ### beal (1994)
 
-Beal and Smith replaced the evaluation with a random number and found the
-program still played recognisable chess. The side with more legal moves
+Beal and Smith ("Random Evaluations in Chess", *ICCA Journal* 17(1),
+1994; see the [Chess Programming Wiki](https://www.chessprogramming.org/Don_Beal))
+replaced the evaluation with a random number and found the program still
+played recognisable chess. The side with more legal moves
 gets more random draws to choose the maximum from, so the search implicitly
 rewards mobility and avoids losing pieces. Nothing in this engine knows
 anything about chess beyond the rules. Options `Range`, `Quiescence`.
@@ -185,6 +201,18 @@ surviving code of Mac Hack VI, Chess 4.6, Cray Blitz and Tech II lives,
 which historic programs already run on Windows today, and a list of
 genuinely odd modern engines for a tournament that values character over
 strength.
+
+## Sources
+
+| engine | primary source | more |
+|---|---|---|
+| turochamp | Turing, "Chess", in Bowden (ed.), [*Faster Than Thought*](https://archive.org/details/fasterthanthough00bvbo), 1953 | [CPW](https://www.chessprogramming.org/Turochamp) |
+| shannon | Shannon, [*Programming a Computer for Playing Chess*](https://vision.unipv.it/IA1/ProgrammingaComputerforPlayingChess.pdf), Phil. Mag. 1950 | [CPW](https://www.chessprogramming.org/Claude_Shannon) |
+| bernstein | Bernstein et al., [WJCC 1958](https://d1yx3ys82bpsa0.cloudfront.net/chess/a-chess-playing-program-for-the-ibm-704.bernstein-roberts-arbuckle-belsky.062303011.pdf); Bernstein and Roberts, [Sci. Am. June 1958](https://d1yx3ys82bpsa0.cloudfront.net/chess/computer-v-chessplayer.bernstein-roberts.scientific-american.june-1958.062303059.pdf); Bernstein, [Chess Review July 1958](https://d1yx3ys82bpsa0.cloudfront.net/chess/chess-review.a-chess-playing-program-for-the-ibm-704.bernstein.july-1958.062303058.pdf) | [CPW](https://www.chessprogramming.org/The_Bernstein_Chess_Program) |
+| soma | Maynard Smith and Michie, "Machines that play games", New Scientist, 9 Nov 1961 | [CPW](https://www.chessprogramming.org/SOMA) (text reproduced) |
+| kotok | Kotok, [*A Chess Playing Program for the IBM 7090 Computer*](https://dspace.mit.edu/handle/1721.1/17406), MIT 1962 | [CPW](https://www.chessprogramming.org/Kotok-McCarthy-Program), [ITEP match](https://www.chessprogramming.org/Stanford-ITEP_Match) |
+| tech | Gillogly, [AI 3 (1972)](https://doi.org/10.1016/0004-3702(72)90045-8); [PhD thesis 1978](http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf) | [CPW](https://www.chessprogramming.org/Tech) |
+| beal | Beal and Smith, "Random Evaluations in Chess", ICCA Journal 17(1), 1994 | [CPW](https://www.chessprogramming.org/Don_Beal) |
 
 ## Credits
 

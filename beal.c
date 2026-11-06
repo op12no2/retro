@@ -1,6 +1,7 @@
 /*
  * beal - Don Beal and Martin Smith's random-evaluation experiment,
  * "Random evaluations in chess", ICCA Journal 17(1), 1994.
+ * https://www.chessprogramming.org/Don_Beal
  *
  * Full-width alpha-beta search in which every leaf receives a RANDOM
  * score. Mate and stalemate are still recognised. The surprising result,

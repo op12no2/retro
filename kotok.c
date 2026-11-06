@@ -2,7 +2,7 @@
  * kotok - the Kotok-McCarthy program, MIT 1959-62.
  *
  *   Alan Kotok, "A Chess Playing Program for the IBM 7090 Computer",
- *   B.S. thesis, MIT, June 1962 (= AI Memo 41). With Elwyn Berlekamp,
+ *   B.S. thesis, MIT, June 1962 (= AI Memo 41). https://dspace.mit.edu/handle/1721.1/17406 With Elwyn Berlekamp,
  *   Michael Lieberman, Charles Niessen, Robert Wagner; supervisor John
  *   McCarthy. Later improved by McCarthy at Stanford and beaten 3-1 by the
  *   ITEP program (Kaissa's ancestor) in the 1966-67 telegraph match.

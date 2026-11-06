@@ -4,6 +4,8 @@
  *   J. J. Gillogly, "The Technology Chess Program", Artificial Intelligence 3 (1972)
  *   J. J. Gillogly, "Performance Analysis of the Technology Chess Program",
  *                   PhD thesis, CMU-CS-78-189 (1978)
+ *   https://doi.org/10.1016/0004-3702(72)90045-8 and
+ *   http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf
  *
  * A deliberately knowledge-free program, built to measure how far raw search
  * ("technology") alone gets you. Full-width alpha-beta to a fixed depth with
