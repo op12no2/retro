@@ -1,0 +1,11 @@
+# binaries are published as GitHub releases
+/beal
+/bernstein
+/kotok
+/shannon
+/soma
+/tech
+/turochamp
+*.exe
+config.json
+*.pgn
