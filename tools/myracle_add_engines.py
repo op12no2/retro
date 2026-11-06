@@ -24,6 +24,9 @@ NEW=[
  ("MinimalChess 0.6 2021", "minimalchess", "MinimalChessEngine.exe",          "uci",    "Thomas Jahn"),
  ("Fairy-Random 2021",     "fairyrandom",  "fairy-random_x86-64.exe",         "uci",    "Fairy-Stockfish as a random mover"),
  ("Crafty 11.13 1996",     "crafty1113",   "crafty1113.exe",                  "xboard", "Hyatt's Cray Blitz descendant, built from the 1996 source with protocol-2 patches (see BUILD.txt); no book"),
+ ("Searchless 9M 2024",    "searchless",   "searchless_9M.exe",               "uci",    "DeepMind searchless_chess 9M transformer, no search; launcher runs the JAX model in WSL on the GPU (README.txt)"),
+ ("Searchless 136M 2024",  "searchless",   "searchless_136M.exe",             "uci",    "DeepMind searchless_chess 136M transformer, no search; launcher runs the JAX model in WSL on the GPU (README.txt)"),
+ ("Searchless 270M 2024",  "searchless",   "searchless_270M.exe",             "uci",    "DeepMind searchless_chess 270M transformer, no search (2895 Lichess blitz Elo in the paper); launcher runs the JAX model in WSL on the GPU (README.txt)"),
 ]
 # our own recreations in engines/retro: name, exe, comment, {option: value}
 EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
