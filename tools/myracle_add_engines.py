@@ -22,6 +22,7 @@ NEW=[
  ("Random Mover 2020",     "randommover",  "chess-random-mover.exe",          "uci",    "pure random legal mover"),
  ("MinimalChess 0.6 2021", "minimalchess", "MinimalChessEngine.exe",          "uci",    "Thomas Jahn"),
  ("Fairy-Random 2021",     "fairyrandom",  "fairy-random_x86-64.exe",         "uci",    "Fairy-Stockfish as a random mover"),
+ ("Crafty 11.13 1996",     "crafty1113",   "crafty1113.exe",                  "xboard", "Hyatt's Cray Blitz descendant, built from the 1996 source with protocol-2 patches (see BUILD.txt); no book"),
 ]
 def num(s):
     try: return int(s)
