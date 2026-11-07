@@ -6,6 +6,21 @@ OLD='/mnt/d/myracle/engines/oldies'
 RETRO='/mnt/d/myracle/engines/retro'
 # name, folder, exe, protocol, comment
 NEW=[
+ # the 2000s field, added 7 Nov 2026 (see oldies/README.md); a trailing dict sets option values
+ ("Fruit 2.1 2005",        "fruit21",     "fruit21.exe",            "uci",    "Fabien Letouzey's Fruit 2.1, built from the original source; OwnBook off", {"OwnBook":False}),
+ ("Toga II 1.2.1a 2006",   "toga",        "toga121a.exe",           "uci",    "Thomas Gaksch's Fruit derivative, pristine 1.2.1a source; OwnBook off", {"OwnBook":False}),
+ ("Glaurung 2.2 2008",     "glaurung22",  "glaurung22.exe",         "uci",    "Tord Romstad's last Glaurung, built from glaurung_22_src; OwnBook off, Threads 1", {"OwnBook":False,"Ponder":False}),
+ ("Stockfish 1.0 2008",    "sf1",         "sf1.exe",                "uci",    "the first Stockfish, built from the official sf_1.0 tag; OwnBook off, Threads 1", {"OwnBook":False,"Ponder":False}),
+ ("Crafty 20.14 2006",     "crafty2014",  "crafty2014.exe",         "xboard", "Bob Hyatt's Crafty 20.14 built from source; no book file so it plays from move one; writes log files beside the exe"),
+ ("Rybka 1.0 Beta 2005",   "rybka10",     "Rybka_v1.0_Beta.x64.exe","uci",    "Vasik Rajlich's free Rybka 1.0 beta, official download; no engine book"),
+ ("Spike 1.2 Turin 2006",  "spike12",     "Spike1.2.exe",           "uci",    "Boehm and Schaefer's Spike 1.2 Turin from the authors' site; OwnBook off", {"OwnBook":False}),
+ ("ProDeo 1.2 2006",       "prodeo",      "rebeluci.exe",           "uci",    "Ed Schroeder's ProDeo 1.2 through the wb2uci adapter like Rebel 6; book off in wb2uci.eng", {"Ponder":False}),
+ ("Zappa 1.1 2005",        "zappa11",     "zappa.exe",              "uci",    "Anthony Cozzie's 2005 world champion, 32-bit build from the Lucas Chess bundle; no book file; writes zappa_log.txt"),
+ ("Ruffian 1.0.5 2003",    "ruffian105",  "Ruffian_105.exe",        "uci",    "Per-Ola Valfridsson's Ruffian from the Arena 3.5 bundle; book file deliberately omitted"),
+ ("Gandalf 6.0 2003",      "gandalf6",    "Gandalf_60.exe",         "uci",    "Steen Suurballe's Gandalf 6.0 (2003 beta; the 2004 Lokasoft release was commercial); UCI only, its xboard mode has no feature line", {"OwnBook":False,"Use Learning":False}),
+ ("Delfi 5.4 2008",        "delfi54",     "Delfi.exe",              "uci",    "Fabio Cavicchio's Delfi 5.4 from the author's site; book file renamed away"),
+ ("Yace Paderborn 2003",   "yace",        "yace.exe",               "uci",    "Dieter Buerssner's Yace, Paderborn 2003 build (0.99.87 is lost); no book file", {"OwnBook":False,"Position Learning":False,"BookLearning":False}),
+ ("Pharaon 3.5.1 2006",    "pharaon351",  "Pharaon.exe",            "uci",    "Franck Zibi's Pharaon 3.5.1 from the author's site; book and logging off in Pharaon.ini"),
  ("Rebel 6.0 1994",        "rebel6",       "rebeluci.exe",                    "uci",    "Ed Schröder's 2012 Windows build via wb2uci adapter; book off in wb2uci.eng"),
  ("GNU Chess 4.0 1992",    "gnuchess4",    "gnuchesx.exe",                    "xboard", "4.0.pl80 built from source with protocol patches; needs whole minutes of base time"),
  ("Kaissa 1992",           "kaissa",       "kaissa_64_ja_sse4.exe",           "xboard", "PC Kaissa 1992, descendant of the 1974 world champion (Jim Ablett port)"),
@@ -92,7 +107,8 @@ have={e['name'] for e in engines}
 # also skip an exe the user has already added by hand under another name
 have_cmd={(e['command'].lower(),e.get('working_folder','').replace('\\','/').rstrip('/')) for e in engines}
 added=[]
-for name,folder,exe,proto,comment in NEW:
+for row in NEW:
+    name,folder,exe,proto,comment=row[:5]; values=row[5] if len(row)>5 else {}
     if name in have or (exe.lower(),'engines/oldies/'+folder) in have_cmd: continue
     e={'name':name,'group':'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
     if proto=='uci':
@@ -100,6 +116,8 @@ for name,folder,exe,proto,comment in NEW:
         if name.startswith('Rebel'):
             for x in o:
                 if x['name']=='Ponder': x['value']=False
+        for x in o:
+            if x['name'] in values: x['value']=values[x['name']]
         e['options']=o
     engines.append(e); added.append((name,len(e.get('options',[]))))
 for name,exe,comment,values in NEW_RETRO:
