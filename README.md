@@ -13,7 +13,9 @@ as a single static Windows or Linux executable with no dependencies.
 | soma | 1961 | John Maynard Smith | the Smith One-Move Analyzer, designed by an evolutionary biologist |
 | kotok | 1962 | Alan Kotok, John McCarthy and the MIT chess group | one of the first programs with alpha-beta; lost 3-1 to ITEP in 1967 |
 | tech | 1971 | James Gillogly | the "technology" program: all search, no knowledge |
+| abramson | 1987 | Bruce Abramson | the expected-outcome sampler: random games to the end decide the move, the first random-playout evaluation |
 | beal | 1994 | Don Beal, Martin Smith | alpha-beta over a purely random evaluation |
+| uct | 2006 | Levente Kocsis, Csaba Szepesvári | Monte Carlo tree search with the UCB1 bandit rule and random playouts, as Ramanujan, Sabharwal and Selman ran it on chess |
 | eloworld | 2019 | Tom Murphy VII | the zero-lookahead players of "Elo World" (24 from the paper, 4 from his repository): random, alphabetical, cccp, pacifist, suicide king, the fate-based players and friends |
 | elofish | 2019 | Tom Murphy VII | the engine-backed Elo World entrants: Stockfish 10 at skill levels 0 to 20, stockfish1m, worstfish, the fifteen random blends and Topple; drives the real engines, which sit beside it |
 
@@ -191,6 +193,29 @@ tie-break. On a 1971 PDP-10 it managed about five plies and was rated USCF
 called it the technology curve. Here it reaches eight to ten plies. Console
 command `pos`. Option `Depth`.
 
+### abramson (1987)
+
+Bruce Abramson's PhD thesis (*The Expected-Outcome Model of Two-Player
+Games*, Columbia 1987, Morgan Kaufmann 1991; the short version is
+"Expected-Outcome: A General Model of Static Evaluation", *IEEE PAMI*
+1990) proposes that the right value of a position is the expected result
+of the game under random play from it, win 1, loss 0, draw a half, and
+estimates it the obvious way: play random games to the end and count. His
+appendix B sampler starts with 16 games and doubles until two successive
+estimates, projected as wins out of 1024 games, agree within a tolerance
+(0, 16, 24, 20, 18 and 9 for the passes up to 1024). With no lookahead at
+all, sampling the board after each legal move, it beat the expert Othello
+evaluator 48-2 in 1987 at one to ten minutes a move; for chess he used the
+same sampler to learn piece values from random games (P 4.0, R 4.8, N 2.5,
+B 3.3, Q 9.6, the pawn carrying its promotion) but found it too slow to
+play. This engine plays it: Abramson's protocol, round-robin over the root
+moves so an interrupted search is fair to all of them, pawns promoting to
+queens as his sampler did. At three thousand random games a second the
+stopping rule is satisfied in a second or two; `Converge=false` with
+`MaxSamples=0` samples until the clock instead, which is how it improves
+with time. `eo` on the console prints every move's estimate. Monte Carlo
+tree search descends from this.
+
 ### beal (1994)
 
 Beal and Smith ("Random Evaluations in Chess", *ICCA Journal* 17(1),
@@ -200,6 +225,26 @@ played recognisable chess. The side with more legal moves
 gets more random draws to choose the maximum from, so the search implicitly
 rewards mobility and avoids losing pieces. Nothing in this engine knows
 anything about chess beyond the rules. Options `Range`, `Quiescence`.
+
+### uct (2006)
+
+Kocsis and Szepesvári's "Bandit based Monte-Carlo Planning" (ECML 2006)
+turned random playouts into a tree search by treating every node as a
+multi-armed bandit: descend choosing the child with the best upper
+confidence bound, mean reward plus 2 C<sub>p</sub> sqrt(ln t / s), play one
+random game from the first position outside the tree, back the result up,
+repeat until time is up, then play the move with the highest average
+reward. The recreation follows their Figure 1 and the chess settings of
+Ramanujan, Sabharwal and Selman (ICAPS 2010, UAI 2010), who ran UCT with
+uniformly random playouts, rewards -1, 0, +1 and an exploration constant
+of 0.4 found best empirically, to show why it failed at chess: with
+10,000 episodes it beat a two-ply random-rollout minimax 74% of the time
+but could not see the five- and seven-move "shallow traps" that chess is
+full of. Options `Exploration` (hundredths), `Episodes` (the budget when
+there is no clock, 10,000 as in the paper) and `ClipPlies`; one new node
+per episode, children tried in random order before the bound takes over,
+the tree discarded between moves, mate and stalemate exact. `uct` on the
+console runs 2000 episodes and lists the root moves with visits and means.
 
 ### eloworld (2019)
 
@@ -301,7 +346,9 @@ strength.
 | soma | Maynard Smith and Michie, "Machines that play games", New Scientist, 9 Nov 1961 | [CPW](https://www.chessprogramming.org/SOMA) (text reproduced) |
 | kotok | Kotok, [*A Chess Playing Program for the IBM 7090 Computer*](https://dspace.mit.edu/handle/1721.1/17406), MIT 1962 | [CPW](https://www.chessprogramming.org/Kotok-McCarthy-Program), [ITEP match](https://www.chessprogramming.org/Stanford-ITEP_Match) |
 | tech | Gillogly, [AI 3 (1972)](https://doi.org/10.1016/0004-3702(72)90045-8); [PhD thesis 1978](http://web.archive.org/web/2019id_/http://reports-archive.adm.cs.cmu.edu/anon/anon/usr/ftp/scan/CMU-CS-77-gillogly.pdf) | [CPW](https://www.chessprogramming.org/Tech) |
+| abramson | Abramson, [*The Expected-Outcome Model of Two-Player Games*](https://academiccommons.columbia.edu/doi/10.7916/D8GH9S2C), Columbia CUCS-315-87, 1987; "Expected-Outcome: A General Model of Static Evaluation", IEEE PAMI 12(2), 1990 | [CPW](https://www.chessprogramming.org/Bruce_Abramson) |
 | beal | Beal and Smith, "Random Evaluations in Chess", ICCA Journal 17(1), 1994 | [CPW](https://www.chessprogramming.org/Don_Beal) |
+| uct | Kocsis and Szepesvári, "Bandit based Monte-Carlo Planning", ECML 2006; Ramanujan, Sabharwal and Selman, [ICAPS 2010](https://ojs.aaai.org/index.php/ICAPS/article/view/13437) and [UAI 2010](https://arxiv.org/abs/1203.4011) | [CPW](https://www.chessprogramming.org/UCT) |
 | eloworld | Murphy, [*Elo World*](http://tom7.org/chess/weak.pdf), SIGBOVIK 2019; [source](https://sourceforge.net/p/tom7misc/svn/HEAD/tree/trunk/chess/) | [video](https://www.youtube.com/watch?v=DpXy041BIlA), [CPW](https://www.chessprogramming.org/Tom_Murphy_VII) |
 | elofish | as eloworld (stockfish.cc, stockfish-player.cc, uci-player.cc); [Stockfish 10](https://github.com/official-stockfish/Stockfish/tree/sf_10), [Topple 0.3.5](https://github.com/konsolas/ToppleChess/releases/tag/v0.3.5) | |
 

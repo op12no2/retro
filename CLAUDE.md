@@ -64,7 +64,12 @@ whose choice depends on the game so far. A no-search engine (eloworld) does all 
 plays that move without letting its own mate and stalemate scoring
 interfere. `cfg` fields: `alphabeta`, `qdepth`, `fixed_depth`,
 `max_ext`, `draw_score`, `must_move` (Turing's rule: no stand pat when
-every move is considerable).
+every move is considerable). An engine that searches on its own inside
+`eng_root_order` (abramson, uct: Monte Carlo, not minimax) reads the
+driver's clock: `time_limited`, `t_soft` (stop starting new work), `t_hard`,
+`t_start`, `lim` (`nodes`, `depth`, `infinite`) and `stop_flag`, which it
+must poll; when it returns 1 from more than one move the driver suppresses
+its own info line so the engine's stands.
 
 ## Testing an engine
 

@@ -445,8 +445,8 @@ int eng_cutoff(const Pos *p, int ply, int depth) { (void)p; (void)ply; (void)dep
 
 static volatile int stop_flag;
 static int move_delay_ms;   /* MoveDelay option: never answer sooner than this after go */
-static long long nodes, t_start, t_hard;
-static int seldepth, time_limited;
+static long long nodes, t_start, t_soft, t_hard;   /* t_soft: when a time-managed search should stop starting new work */
+static int seldepth, time_limited, root_chosen;
 static long long node_limit;
 static int pv[MAXPLY][MAXPLY], pv_len[MAXPLY];
 static uint64_t path[MAXPLY];
@@ -626,12 +626,11 @@ static void print_info(int depth, int score, long long elapsed) {
 static void *search_main(void *arg) {
   int mv[256], n, i, depth, best_move = 0, max_depth;
   int ply0_scores[256];
-  long long t_soft = 0;
   char ms[8];
   (void)arg;
 
   nodes = 0; seldepth = 0;
-  t_start = now_ms();
+  t_start = now_ms(); t_soft = 0;
   time_limited = 0; node_limit = lim.nodes;
   max_depth = lim.depth ? lim.depth : MAXPLY - 2;
   if (cfg.fixed_depth && !lim.depth && !lim.infinite) max_depth = cfg.fixed_depth;
@@ -656,7 +655,9 @@ static void *search_main(void *arg) {
   if (n == 0) { out("bestmove 0000\n"); searching = 0; return NULL; }
   path[0] = hash_pos(&root);
   n = eng_select(&root, mv, n, 0, max_depth, 0);
+  root_chosen = n;
   n = eng_root_order(&root, mv, n);
+  root_chosen = n == 1 && root_chosen > 1;   /* the engine chose at the root: its own info lines stand */
   best_move = mv[0];
   for (i = 0; i < n; i++) ply0_scores[i] = 0;
 
@@ -699,7 +700,7 @@ static void *search_main(void *arg) {
     memcpy(pv[0], iter_pv, iter_pv_len * sizeof(int)); pv_len[0] = iter_pv_len;
     seldepth = iter_seldepth;
     elapsed = now_ms() - t_start;
-    print_info(depth, best, elapsed);
+    if (!root_chosen) print_info(depth, best, elapsed);
     if ((best > MATE - MAXPLY || best < -MATE + MAXPLY) && !lim.infinite) break;
     if (n == 1 && !lim.infinite && !lim.depth) break;
     if (time_limited && !lim.infinite && now_ms() >= t_soft) break;

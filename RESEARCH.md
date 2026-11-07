@@ -15,6 +15,8 @@ below as the remaining research came back.
 | soma.exe | high | the New Scientist text gives every number except two minor rules |
 | kotok.exe | fair | every eval weight and the plausible widths are in the thesis; the FORTRAN listing exists as an image-only scan for a future exact port |
 | beal.exe | exact | the experiment is fully specified by one sentence |
+| abramson.exe | high | Abramson's thesis gives the definition, the sampler pseudocode and the convergence schedule; the rules for ending a random chess game are his only silence |
+| uct.exe | high | Kocsis and Szepesvári's algorithm and Ramanujan et al.'s chess settings (random playouts, -1/0/+1, exploration 0.4, 10,000 episodes); expansion and final-move details are standard choices the papers leave unsaid |
 | eloworld.exe | exact | Murphy's player.cc, fate-player.cc and numeric-player.cc transcribed rule by rule, including his move order, tie-breaks and a live sampling bug; replays the paper's cccp game move for move (added 6 Nov 2026) |
 | elofish.exe | exact | the 24 engine-backed Elo World entrants (Stockfish levels, stockfish1m, worstfish, 15 blends, Topple) driving Stockfish 10 and Topple 0.3.5 as children, Murphy's protocol (FEN reset, counters 10 10) reproduced (added 6 Nov 2026) |
 

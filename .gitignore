@@ -8,6 +8,8 @@
 /turochamp
 /eloworld
 /elofish
+/abramson
+/uct
 *.exe
 config.json
 *.pgn

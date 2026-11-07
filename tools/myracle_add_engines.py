@@ -36,6 +36,8 @@ NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
   "opposite_color","sym_mirror_y","sym_mirror_x","sym_180","single_player",
   "safe","dangerous","popular","rare","survivalist","fatalist","equalizer","binary_pi","binary_e")]
 EF="Tom Murphy VII's Elo World (2019) engine-backed entrant %s; needs stockfish_10_x64.exe / Topple_v0.3.5_x86_64.exe beside elofish.exe"
+NEW_RETRO+=[("Abramson 1987", "abramson.exe", "Abramson's expected-outcome sampler: random games to the end from each move, no lookahead; set Converge=false and MaxSamples=0 to use the clock", {}),
+            ("UCT 2006", "uct.exe", "Kocsis and Szepesvari's UCT with uniformly random playouts, Ramanujan et al.'s chess settings (exploration 0.4, rewards -1/0/+1)", {})]
 NEW_RETRO+=[("Elo World %s 2019"%p, "elofish.exe", EF%p, {"Player":p}) for p in
  ("stockfish0","stockfish5","stockfish10","stockfish15","stockfish20","stockfish1m","worstfish",
   "stockfish1m_r64","stockfish1m_r128","stockfish1m_r256","stockfish1m_r512","stockfish1m_r1024","stockfish1m_r2048",
