@@ -444,6 +444,7 @@ int eng_cutoff(const Pos *p, int ply, int depth) { (void)p; (void)ply; (void)dep
 /* ------------------------------------------------------------------ */
 
 static volatile int stop_flag;
+static int move_delay_ms;   /* MoveDelay option: never answer sooner than this after go */
 static long long nodes, t_start, t_hard;
 static int seldepth, time_limited;
 static long long node_limit;
@@ -710,6 +711,15 @@ static void *search_main(void *arg) {
     struct timespec ts = {0, 5000000}; nanosleep(&ts, NULL);
 #endif
   }
+  /* MoveDelay: hold the answer so that fast or search-free engines can be
+     watched; a stop command releases it at once */
+  while (move_delay_ms > 0 && !stop_flag && now_ms() - t_start < move_delay_ms) {
+#ifdef _WIN32
+    Sleep(5);
+#else
+    struct timespec ts = {0, 5000000}; nanosleep(&ts, NULL);
+#endif
+  }
   move_str(best_move, ms);
   out("bestmove %s\n", ms);
   searching = 0;
@@ -763,6 +773,7 @@ static int uci_main(void) {
       out("id name %s\n", ENGINE_NAME);
       out("id author %s\n", ENGINE_AUTHOR);
       eng_options();
+      out("option name MoveDelay type spin default 0 min 0 max 60000\n");
       out("option name LogFile type string default <empty>\n");
       out("uciok\n");
     } else if (!strcmp(tok, "isready")) {
@@ -779,7 +790,8 @@ static int uci_main(void) {
         else if (!strcmp(tok, "value")) value = strtok(NULL, " ");
       }
       if (name && value) {
-        if (!strcmp(name, "LogFile")) {
+        if (!strcmp(name, "MoveDelay")) move_delay_ms = atoi(value);
+        else if (!strcmp(name, "LogFile")) {
           if (log_file) { fclose(log_file); log_file = NULL; }
           if (strcmp(value, "<empty>") && strcmp(value, "")) log_file = fopen(value, "a");
         } else eng_setoption(name, value);

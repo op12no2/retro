@@ -87,9 +87,11 @@ def uci_options(folder, exe):
     return opts
 with gzip.open(CFG,'rt',encoding='utf-8') as f: engines=json.load(f)
 have={e['name'] for e in engines}
+# also skip an exe the user has already added by hand under another name
+have_cmd={(e['command'].lower(),e.get('working_folder','').replace('\\','/').rstrip('/')) for e in engines}
 added=[]
 for name,folder,exe,proto,comment in NEW:
-    if name in have: continue
+    if name in have or (exe.lower(),'engines/oldies/'+folder) in have_cmd: continue
     e={'name':name,'group':'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
     if proto=='uci':
         o=uci_options(os.path.join(OLD,folder),exe)
