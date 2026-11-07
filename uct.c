@@ -196,7 +196,7 @@ static void search_root(const Pos *p) {
 
 int eng_root_order(const Pos *p, int *mv, int n) {
   int b, i;
-  (void)n;
+  if (n == 1) return 1;                             /* a forced move needs no episodes */
   search_root(p);
   b = best_child(0);
   if (b >= 0) {

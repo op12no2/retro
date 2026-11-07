@@ -138,6 +138,7 @@ int eng_root_order(const Pos *p, int *mv, int n) {
   int w[256], d[256], l[256], i, pass, size, best = 0, max_pass = lim.depth ? lim.depth : 64;
   char ms[8];
   games = 0; longest = 0;
+  if (n == 1) return 1;                             /* a forced move needs no games */
   for (i = 0; i < n; i++) {
     int tmp[256], j, reps = 0; uint64_t h;
     child[i] = *p; make(&child[i], mv[i]);
