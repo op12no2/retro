@@ -154,6 +154,11 @@ or wraps third-party entries in `slow.exe`).
 Gotchas: if an exe is rebuilt with different option defaults, Myracle
 compares the stored `default` fields with what the engine reports and
 refuses to start it ("defaults have changed") until the entry is refreshed.
+So never copy a rebuild whose option list changed into `engines/retro`
+while a tournament is running: the entries cannot be refreshed until Myracle
+closes, and the engines would fail when their games came up (nearly
+happened 7 Nov 2026 with MoveDelay; the v1.3 exes were put back). Stage such
+builds and swap them in together with the config refresh.
 Keep comments ASCII: Myracle's own writer escapes non-ASCII as `\xHH`,
 which is not valid JSON. The user names engines "Name version year"
 (e.g. "Rebel 6.0 1994") and references them by name in `.tour` files, so
