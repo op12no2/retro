@@ -167,6 +167,7 @@ int eng_root_order(const Pos *p, int *mv, int n) {
       if (opt_converge && pass > 0 && abs(e - r_est[i]) <= tol) r_conv[i] = 1;
       r_est[i] = e;
     }
+    if (!any) break;
     for (best = 0, i = 1; i < n; i++) if (r_est[i] > r_est[best]) best = i;
     {
       long long el = now_ms() - t_start;
@@ -174,12 +175,17 @@ int eng_root_order(const Pos *p, int *mv, int n) {
       out("info depth %d seldepth %d score cp %d nodes %lld nps %lld time %lld pv %s\n",
           pass + 1, longest, eo_cp(r_est[best]), games, el > 0 ? games * 1000 / el : 0, el, ms);
     }
-    if (!any) break;
     if (opt_max && size >= opt_max) break;
     if (!opt_max && !time_limited && !lim.nodes && size >= 1024) break;   /* no clock to run on: Abramson's cap */
   }
 done:
   for (best = 0, i = 1; i < n; i++) if (r_est[i] > r_est[best]) best = i;
+  {   /* final line, so the reported pv is the move played even when the clock cut a pass short */
+    long long el = now_ms() - t_start;
+    move_str(mv[best], ms);
+    out("info depth %d seldepth %d score cp %d nodes %lld nps %lld time %lld pv %s\n",
+        pass + 1, longest, eo_cp(r_est[best]), games, el > 0 ? games * 1000 / el : 0, el, ms);
+  }
   { int t = mv[0]; mv[0] = mv[best]; mv[best] = t; }
   return 1;
 }
