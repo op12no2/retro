@@ -6,7 +6,7 @@ OLD='/mnt/d/myracle/engines/oldies'
 RETRO='/mnt/d/myracle/engines/retro'
 # name, folder, exe, protocol, comment
 NEW=[
- # the 2000s field, added 7 Nov 2026 (see oldies/README.md); a trailing dict sets option values
+ # the 2000s field, added 7 Nov 2026 (see oldies/README.md); a trailing dict sets option values; group naughties
  ("Fruit 2.1 2005",        "fruit21",     "fruit21.exe",            "uci",    "Fabien Letouzey's Fruit 2.1, built from the original source; OwnBook off", {"OwnBook":False}),
  ("Toga II 1.2.1a 2006",   "toga",        "toga121a.exe",           "uci",    "Thomas Gaksch's Fruit derivative, pristine 1.2.1a source; OwnBook off", {"OwnBook":False}),
  ("Glaurung 2.2 2008",     "glaurung22",  "glaurung22.exe",         "uci",    "Tord Romstad's last Glaurung, built from glaurung_22_src; OwnBook off, Threads 1", {"OwnBook":False,"Ponder":False}),
@@ -45,6 +45,8 @@ NEW=[
 ]
 # our own recreations in engines/retro: name, exe, comment, {option: value}
 EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
+# folders that belong to the user's "The Naughties" group (the 2000s field)
+NAUGHTIES={'fruit21','toga','glaurung22','sf1','crafty2014','rybka10','spike12','prodeo','zappa11','ruffian105','gandalf6','delfi54','yace','pharaon351'}
 NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
  ("random_move","first_move","alphabetical","alphamove","cccp","pacifist","min_oppt_moves",
   "suicide_king","reverse_starting","huddle","swarm","generous","no_i_insist","same_color",
@@ -110,7 +112,7 @@ added=[]
 for row in NEW:
     name,folder,exe,proto,comment=row[:5]; values=row[5] if len(row)>5 else {}
     if name in have or (exe.lower(),'engines/oldies/'+folder) in have_cmd: continue
-    e={'name':name,'group':'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
+    e={'name':name,'group':'naughties' if folder in NAUGHTIES else 'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
     if proto=='uci':
         o=uci_options(os.path.join(OLD,folder),exe)
         if name.startswith('Rebel'):
