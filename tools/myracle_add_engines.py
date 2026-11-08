@@ -124,7 +124,9 @@ for row in NEW:
     engines.append(e); added.append((name,len(e.get('options',[]))))
 for name,exe,comment,values in NEW_RETRO:
     if name in have: continue
-    e={'name':name,'group':'retro','command':exe,'working_folder':'engines/retro','protocol':'uci','comment':comment}
+    # the Elo World players get their own groups: eloworld (no search) and elofish (engine-backed)
+    group={'eloworld.exe':'eloworld','elofish.exe':'elofish'}.get(exe,'retro')
+    e={'name':name,'group':group,'command':exe,'working_folder':'engines/retro','protocol':'uci','comment':comment}
     e['options']=uci_options(RETRO,exe)
     for x in e['options']:
         if x['name'] in values: x['value']=values[x['name']]
