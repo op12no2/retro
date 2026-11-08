@@ -98,7 +98,10 @@ line in its header) is a stdio proxy: put it in the engine's folder with a
 `slow.txt` (line 1 the real command, line 2 the delay in ms), point the
 entry's command at `slow.exe` and keep the protocol; it holds `bestmove`,
 `move` and protocol-1 move lines until the delay has passed since the GUI's
-last line and passes everything else straight through. Probe first
+last line and passes everything else straight through. An optional third
+line in `slow.txt` (e.g. `go movetime 20`) replaces every `go` the GUI
+sends, which is how a fixed-effort reference such as `oldies/sf10_20ms`
+is made, since Myracle's clock is per tournament, not per engine. Probe first
 with `printf 'uci\n'` or `printf 'xboard\nprotover 2\n'` (sleep before
 `quit`). Use 60+1 rather than 10s+0.1: old engines lose on time at bullet.
 Keep concurrency at 2 on this machine. Lessons so far: micro-Max omitted

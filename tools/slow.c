@@ -17,7 +17,10 @@
  *     2000
  *
  * line 1 the engine command (relative to the proxy's folder), line 2 the
- * delay in ms. Point the GUI at slow.exe with the engine's own protocol.
+ * delay in ms, and an optional line 3 that replaces every "go ..." the GUI
+ * sends, e.g. "go movetime 20" or "go nodes 1000000", which turns a normal
+ * UCI engine into a fixed-effort reference whatever the tournament clock
+ * says. Point the GUI at slow.exe with the engine's own protocol.
  *
  * Build:  x86_64-w64-mingw32-gcc -O2 -static -o slow.exe slow.c -lpthread
  *         gcc -O2 -o slow slow.c -lpthread
@@ -44,6 +47,7 @@ static void sleep_ms(int ms) { struct timespec ts = { ms / 1000, (ms % 1000) * 1
 #endif
 
 static int delay_ms = 1000;
+static char go_override[256];             /* line 3 of the config, if any */
 static volatile long long last_in;        /* time of the GUI's last line */
 static volatile int gui_closed;
 
@@ -75,7 +79,9 @@ static void *gui_thread(void *arg) {
   (void)arg;
   while (fgets(line, sizeof line, stdin)) {
     last_in = now_ms();
-    write_child(line);
+    if (go_override[0] && !strncmp(line, "go", 2) && (line[2] == '\n' || line[2] == ' ' || line[2] == '\r')) {
+      write_child(go_override); write_child("\n");
+    } else write_child(line);
   }
   gui_closed = 1;
   return NULL;
@@ -144,6 +150,7 @@ int main(int argc, char **argv) {
   if (!f) { fprintf(stderr, "slow: cannot open %s\n", cfgpath); return 1; }
   if (fgets(cmd, sizeof cmd, f)) cmd[strcspn(cmd, "\r\n")] = 0;
   if (fgets(line, sizeof line, f)) delay_ms = atoi(line);
+  if (fgets(line, sizeof line, f)) { line[strcspn(line, "\r\n")] = 0; if (!strncmp(line, "go", 2)) snprintf(go_override, sizeof go_override, "%.255s", line); }
   fclose(f);
   if (!cmd[0]) { fprintf(stderr, "slow: %s has no engine command\n", cfgpath); return 1; }
   if (!start_child(cmd)) { fprintf(stderr, "slow: cannot start %s\n", cmd); return 1; }
