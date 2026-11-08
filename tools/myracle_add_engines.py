@@ -47,6 +47,9 @@ NEW=[
 EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
 # folders that belong to the user's "The Naughties" group (the 2000s field)
 NAUGHTIES={'fruit21','toga','glaurung22','sf1','crafty2014','rybka10','spike12','prodeo','zappa11','ruffian105','gandalf6','delfi54','yace','pharaon351'}
+# approximate CCRL 40/15 ratings for the Naughties (from memory, rounded; good enough for seeding)
+ELO={'rybka10':2800,'glaurung22':2790,'sf1':2790,'toga':2760,'spike12':2730,'fruit21':2700,'prodeo':2650,
+     'crafty2014':2640,'zappa11':2620,'ruffian105':2600,'delfi54':2560,'pharaon351':2540,'gandalf6':2520,'yace':2460}
 NEW_RETRO=[("Elo World %s 2019"%p, "eloworld.exe", EW%p, {"Player":p}) for p in
  ("random_move","first_move","alphabetical","alphamove","cccp","pacifist","min_oppt_moves",
   "suicide_king","reverse_starting","huddle","swarm","generous","no_i_insist","same_color",
@@ -113,6 +116,7 @@ for row in NEW:
     name,folder,exe,proto,comment=row[:5]; values=row[5] if len(row)>5 else {}
     if name in have or (exe.lower(),'engines/oldies/'+folder) in have_cmd: continue
     e={'name':name,'group':'naughties' if folder in NAUGHTIES else 'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
+    if folder in ELO: e['elo']=ELO[folder]
     if proto=='uci':
         o=uci_options(os.path.join(OLD,folder),exe)
         if name.startswith('Rebel'):
