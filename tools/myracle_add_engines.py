@@ -20,6 +20,8 @@ NEW=[
  ("Gandalf 6.0 2003",      "gandalf6",    "Gandalf_60.exe",         "uci",    "Steen Suurballe's Gandalf 6.0 (2003 beta; the 2004 Lokasoft release was commercial); UCI only, its xboard mode has no feature line", {"OwnBook":False,"Use Learning":False}),
  ("Delfi 5.4 2008",        "delfi54",     "Delfi.exe",              "uci",    "Fabio Cavicchio's Delfi 5.4 from the author's site; book file renamed away"),
  ("Yace Paderborn 2003",   "yace",        "yace.exe",               "uci",    "Dieter Buerssner's Yace, Paderborn 2003 build (0.99.87 is lost); no book file", {"OwnBook":False,"Position Learning":False,"BookLearning":False}),
+ ("Stockfish 16 2000n 2023", "sf16",       "sf16_2000n.exe",         "uci",    "Stockfish 16 held to 2000 nodes a move by the slow.exe proxy, 1 s hold; calibrated level with the Searchless 270M model (README.txt)"),
+ ("Stockfish 16 500n 2023",  "sf16",       "sf16_500n.exe",          "uci",    "Stockfish 16 held to 500 nodes a move by the slow.exe proxy, 1 s hold; calibrated level with the Searchless 9M model (README.txt)"),
  ("Stockfish 10 20ms 2018", "sf10_20ms",   "slow.exe",               "uci",    "Stockfish 10 held to 20 ms per move by the slow.exe proxy (slow.txt line 3: go movetime 20), 1 s hold per reply; the relatable reference for the Searchless models"),
  ("Pharaon 3.5.1 2006",    "pharaon351",  "Pharaon.exe",            "uci",    "Franck Zibi's Pharaon 3.5.1 from the author's site; book and logging off in Pharaon.ini"),
  ("Rebel 6.0 1994",        "rebel6",       "rebeluci.exe",                    "uci",    "Ed Schröder's 2012 Windows build via wb2uci adapter; book off in wb2uci.eng"),
