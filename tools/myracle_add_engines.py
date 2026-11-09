@@ -20,6 +20,20 @@ NEW=[
  ("Gandalf 6.0 2003",      "gandalf6",    "Gandalf_60.exe",         "uci",    "Steen Suurballe's Gandalf 6.0 (2003 beta; the 2004 Lokasoft release was commercial); UCI only, its xboard mode has no feature line", {"OwnBook":False,"Use Learning":False}),
  ("Delfi 5.4 2008",        "delfi54",     "Delfi.exe",              "uci",    "Fabio Cavicchio's Delfi 5.4 from the author's site; book file renamed away"),
  ("Yace Paderborn 2003",   "yace",        "yace.exe",               "uci",    "Dieter Buerssner's Yace, Paderborn 2003 build (0.99.87 is lost); no book file", {"OwnBook":False,"Position Learning":False,"BookLearning":False}),
+ # emulated dedicated machines (MessChess, 9 Nov 2026; CC7 left out: a book opening makes it forfeit)
+ ("Mephisto Amsterdam 1985"                   , "messchess", "mephisto_amsterdam.exe", "uci", "Richard Lang's 68000 program in the MessChess emulator (CB-Emu Pro, MAME 0.220, Franz Huber's ROMs, private use only); Level 7 00:10:00, a 10-minute game on its own clock; ignores the GUI clock"),
+ ("Mephisto Dallas 1986"                      , "messchess", "mephisto_dallas.exe", "uci", "Richard Lang, emulated by MessChess; Level 7 00:10:00 (10 min game on its own clock)"),
+ ("Mephisto Roma 1987"                        , "messchess", "mephisto_roma.exe", "uci", "Richard Lang, emulated by MessChess; Level 38 00:10:00 (10 min game on its own clock)"),
+ ("Mephisto Almeria 1988"                     , "messchess", "mephisto_almeria.exe", "uci", "Richard Lang, emulated by MessChess; BLITZ 4 (10 min game on its own clock)"),
+ ("Mephisto Portorose 1989"                   , "messchess", "mephisto_portorose.exe", "uci", "Richard Lang, emulated by MessChess; BLITZ 4 (10 min game on its own clock)"),
+ ("Mephisto Lyon 1990"                        , "messchess", "mephisto_lyon.exe", "uci", "Richard Lang, emulated by MessChess; BLITZ 4 (10 min game on its own clock)"),
+ ("Mephisto Vancouver 1991"                   , "messchess", "mephisto_vancouver.exe", "uci", "Richard Lang, emulated by MessChess; BLITZ 4 (10 min game on its own clock)"),
+ ("Mephisto London 1994"                      , "messchess", "mephisto_london.exe", "uci", "Richard Lang, emulated by MessChess; BLITZ 4 (10 min game on its own clock)"),
+ ("Mephisto MM IV 1985"                       , "messchess", "mephisto_mm4.exe", "uci", "Ed Schroeder's program, emulated by MessChess; level 1 (5 s a move); can hang on an ambiguous LED display (about 1 game in 4), a loss on time"),
+ ("Mephisto MM V 1989"                        , "messchess", "mephisto_mm5.exe", "uci", "Ed Schroeder's program, emulated by MessChess; level 1 (5 s a move); same LED hang risk as MM IV"),
+ ("Mephisto Rebell 5.0 1986"                  , "messchess", "mephisto_rebell5.exe", "uci", "Ed Schroeder's program, emulated by MessChess; level 1 (5 s a move); same LED hang risk as MM IV"),
+ ("Fidelity Elite Champion Challenger 1983"   , "messchess", "fidelity_elite.exe", "uci", "the Spracklens' program, emulated by MessChess; level 1 (5 s a move)"),
+ ("Fidelity Elite Avant Garde 1989"           , "messchess", "fidelity_avantgarde.exe", "uci", "the Spracklens' program, emulated by MessChess; level a1 (5 s a move)"),
  ("Cray Blitz 49h 1990",   "crayblitz",  "CrayBlitz_49h_uci.exe",  "uci",    "Bob Hyatt's Fortran Cray Blitz, Jim Ablett's build behind InBetween and wb2uci; fixed 10 s a move (st=10 in CrayBlitz.ini), book off via so=-1; whole games from the start position only, one at a time", {"Ponder":False}),
  ("Cyrus IS Chess 1983",   "cyrus",      "cyrus.exe",              "uci",    "Richard Lang's 1983 ZX Spectrum program, Steve Maughan's verified Z80-to-Zig port; Level 8 = the original's exact search (clock ignored, pace with a delay), OwnBook off", {"OwnBook":False,"Level":"Level 8"}),
  ("Stockfish 16 2000n 2023", "sf16",       "sf16_2000n.exe",         "uci",    "Stockfish 16 held to 2000 nodes a move by the slow.exe proxy, 1 s hold; calibrated level with the Searchless 270M model (README.txt)"),
@@ -51,6 +65,8 @@ NEW=[
 # our own recreations in engines/retro: name, exe, comment, {option: value}
 EW="Tom Murphy VII's Elo World (2019) player %s, see retro README"
 # folders that belong to the user's "The Naughties" group (the 2000s field)
+# the On Being Emulated field: original machine code run under emulation or straight ports
+EMULATED={'messchess','cyrus','crayblitz'}
 NAUGHTIES={'fruit21','toga','glaurung22','sf1','crafty2014','rybka10','spike12','prodeo','zappa11','ruffian105','gandalf6','delfi54','yace','pharaon351'}
 # approximate CCRL 40/15 ratings for the Naughties (from memory, rounded; good enough for seeding)
 ELO={'rybka10':2800,'glaurung22':2790,'sf1':2790,'toga':2760,'spike12':2730,'fruit21':2700,'prodeo':2650,
@@ -120,7 +136,7 @@ added=[]
 for row in NEW:
     name,folder,exe,proto,comment=row[:5]; values=row[5] if len(row)>5 else {}
     if name in have or (exe.lower(),'engines/oldies/'+folder) in have_cmd: continue
-    e={'name':name,'group':'naughties' if folder in NAUGHTIES else 'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
+    e={'name':name,'group':'naughties' if folder in NAUGHTIES else 'emulated' if folder in EMULATED else 'oldies','command':exe,'working_folder':'engines/oldies/'+folder,'protocol':proto,'comment':comment}
     if folder in ELO: e['elo']=ELO[folder]
     if proto=='uci':
         o=uci_options(os.path.join(OLD,folder),exe)
